@@ -8521,15 +8521,16 @@ window.renderEntityList = renderEntityList;
 
 function selectEntityFromList(type, id, lat, lng) {
   // Spin globe to entity location
-  if (lat && lng && Math.abs(lat) <= 90) {
-    const targetRotX = Math.max(-85, Math.min(85, -lat));
-    const targetRotY = -lng;
+  // rotX = longitude offset (horizontal spin), rotY = latitude tilt (vertical)
+  if (lat != null && lng != null && Math.abs(lat) <= 90) {
+    const targetRotX = -lng;                                  // centre longitude on screen
+    const targetRotY = Math.max(-85, Math.min(85, lat));       // tilt latitude into view
     const startX = rotX, startY = rotY;
-    const dX = targetRotX - startX;
-    let dY = targetRotY - startY;
-    while (dY > 180)  dY -= 360;
-    while (dY < -180) dY += 360;
-    const steps = 40, ease = t => t < .5 ? 2*t*t : -1+(4-2*t)*t;
+    let dX = targetRotX - startX;
+    const dY = targetRotY - startY;
+    while (dX > 180)  dX -= 360;
+    while (dX < -180) dX += 360;
+    const steps = 50, ease = t => t < .5 ? 2*t*t : -1+(4-2*t)*t;
     let step = 0;
     const spin = () => { step++; const t = ease(step/steps); rotX = startX+dX*t; rotY = startY+dY*t; if (step<steps) requestAnimationFrame(spin); };
     autoRotate = false;
