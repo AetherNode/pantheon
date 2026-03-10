@@ -4265,8 +4265,14 @@ function handleGlobeClick(e) {
       selected = {type:best.type, id:best.data.id};
       // ── ENTITY ZOOM: pan globe to entity and zoom in ──
       const d = best.data;
-      const entLat = d.lat ?? (d.fromLat !== undefined ? d.fromLat + (d.toLat - d.fromLat) * d.t : null);
-      const entLng = d.lng ?? (d.fromLng !== undefined ? d.fromLng + (d.toLng - d.fromLng) * d.t : null);
+      let entLat, entLng;
+      if (d.fromLat !== undefined && d.toLat !== undefined && d.t !== undefined) {
+        // Flight — use great-circle interpolation to match exact rendered position
+        [entLat, entLng] = gcPoint(d.fromLat, d.fromLng, d.toLat, d.toLng, d.t);
+      } else {
+        entLat = d.lat ?? null;
+        entLng = d.lng ?? null;
+      }
       if (entLat != null && entLng != null) {
         autoRotate = false; velX = 0; velY = 0;
         // Animate globe rotation to center on entity
@@ -4400,8 +4406,11 @@ function showDetailPanel(type, data) {
   if (type==="flight") {
     const f=data;
     const acInfo = getAcDb(f.ac);
-    const progress = Math.round(f.t*100);
-    const remKm = Math.round((1-f.t)*f.distKm);
+    // t starts at 1/3 (real ADS-B position), normalise so panel shows 0%→100% from live position
+    const T0 = 1/3;
+    const tNorm = Math.max(0, (f.t - T0) / (1 - T0));
+    const progress = Math.round(tNorm * 100);
+    const remKm = Math.round((1 - f.t) * f.distKm);
     const airlineCol = getAirlineCol(f.airline);
     const isMil=f.type==='military', isUAV=f.type==='uav';
     const typeCol = isMil?'#ff8c00':isUAV?'#00e5ff':'#3d8fe0';
@@ -6662,11 +6671,12 @@ async function fetchADSBExchange() {
           const spd = Math.round((a.gs || 0) * 1.852);
           const hdg = a.track || 0;
           const hr = hdg * Math.PI / 180;
+          const cosLat = Math.cos(lat * Math.PI/180) || 0.001;
           const pd = Math.max(200, spd * 1.5) / 111;
           const toLat = Math.max(-85, Math.min(85, lat + pd * Math.cos(hr)));
-          const toLng = ((lng + pd * Math.sin(hr) / Math.cos(lat * Math.PI/180) + 180) % 360) - 180;
+          const toLng = ((lng + pd * Math.sin(hr) / cosLat + 180) % 360) - 180;
           const fromLat = Math.max(-85, Math.min(85, lat - pd * 0.3 * Math.cos(hr)));
-          const fromLng = ((lng - pd * 0.3 * Math.sin(hr) / Math.cos(lat * Math.PI/180) + 180) % 360) - 180;
+          const fromLng = ((lng - pd * 0.3 * Math.sin(hr) / cosLat + 180) % 360) - 180;
           const dk = Math.max(200, spd * 2);
           const ts = Math.round(dk / Math.max(50, spd) * 3600);
           return {
@@ -6677,10 +6687,10 @@ async function fetchADSBExchange() {
             airline: a.ownOp || 'Military', reg: a.r || '—',
             sqk: a.squawk || '—',
             ac: a.t || 'MIL', alt: Math.round(altFt), spd: spd || 500,
-            distKm: Math.round(dk), timeSec: ts, dPerSec: 1/ts,
-            t: 0, // start from live position; animates forward from real coords
+            distKm: Math.round(dk), timeSec: ts, dPerSec: 1/Math.max(1,ts),
+            t: 0.3/1.3, // real pos: fromLat is 0.3pd behind, toLat is 1.0pd ahead
             trail: [{ lat, lng }],
-            isLive: true, adsbx: true,
+            isLive: true, adsbx: true, livePos: {lat, lng}, hdg,
           };
         });
 
@@ -7551,11 +7561,13 @@ async function fetchLiveFlights() {
   const buildFlight = (lat, lng, hdg, spd, cs, type, extra={}) => {
     const hr = (hdg||0) * Math.PI / 180;
     const spd2 = Math.max(100, spd||450);
+    const cosLat = Math.cos(lat * Math.PI/180) || 0.001;
+    // fromLat is 0.5 * pd behind; toLat is 1.0 * pd ahead → real pos is at t = 0.5/1.5 = 0.333
     const pd = Math.max(300, spd2 * 2) / 111;
-    const toLat = Math.max(-85, Math.min(85, lat + pd * Math.cos(hr)));
-    const toLng = ((lng + pd * Math.sin(hr) / Math.cos(lat * Math.PI/180) + 180) % 360) - 180;
+    const toLat  = Math.max(-85, Math.min(85, lat + pd * Math.cos(hr)));
+    const toLng  = ((lng + pd * Math.sin(hr) / cosLat + 180) % 360) - 180;
     const fromLat = Math.max(-85, Math.min(85, lat - pd * 0.5 * Math.cos(hr)));
-    const fromLng = ((lng - pd * 0.5 * Math.sin(hr) / Math.cos(lat * Math.PI/180) + 180) % 360) - 180;
+    const fromLng = ((lng - pd * 0.5 * Math.sin(hr) / cosLat + 180) % 360) - 180;
     const dk = Math.max(200, spd2 * 3);
     const ts = Math.round(dk / spd2 * 3600);
     return {
@@ -7566,10 +7578,11 @@ async function fetchLiveFlights() {
       distKm: Math.round(dk), timeSec: ts, dPerSec: 1/Math.max(1,ts),
       fromLat, fromLng, fromName: extra.origin || '—',
       toLat, toLng, toName: extra.dest || 'En Route',
-      t: 0, // start from live ADS-B position
+      t: 1/3, // 0.333 = real ADS-B position (fromLat is 0.5pd behind, toLat is 1.0pd ahead)
       trail: [{lat, lng}],
       id: 'fl_' + (cs||'ac') + '_' + (lat.toFixed(3) + lng.toFixed(3)).replace(/[.-]/g,''),
       isLive: true, livePos: {lat, lng},
+      hdg: hdg||0,
     };
   };
 
