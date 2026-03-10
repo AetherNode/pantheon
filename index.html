@@ -8520,32 +8520,25 @@ function renderEntityList() {
 window.renderEntityList = renderEntityList;
 
 function selectEntityFromList(type, id, lat, lng) {
-  // Highlight on globe — spin to location if we have coords
+  // Spin globe to entity location
   if (lat && lng && Math.abs(lat) <= 90) {
     const targetRotX = Math.max(-85, Math.min(85, -lat));
     const targetRotY = -lng;
-    // Smooth spin to target
     const startX = rotX, startY = rotY;
     const dX = targetRotX - startX;
     let dY = targetRotY - startY;
-    while (dY > 180) dY -= 360;
+    while (dY > 180)  dY -= 360;
     while (dY < -180) dY += 360;
-    const steps = 40;
+    const steps = 40, ease = t => t < .5 ? 2*t*t : -1+(4-2*t)*t;
     let step = 0;
-    const ease = t => t < .5 ? 2*t*t : -1+(4-2*t)*t;
-    const spin = () => {
-      step++;
-      const t = ease(step / steps);
-      rotX = startX + dX * t;
-      rotY = startY + dY * t;
-      if (step < steps) requestAnimationFrame(spin);
-    };
+    const spin = () => { step++; const t = ease(step/steps); rotX = startX+dX*t; rotY = startY+dY*t; if (step<steps) requestAnimationFrame(spin); };
     autoRotate = false;
     requestAnimationFrame(spin);
   }
-  // Flash highlight on the entity
-  globeHighlight = { type, id: String(id), pulse: 0 };
-  setTimeout(() => { globeHighlight = null; }, 3000);
+  // Store coords directly — no re-lookup needed, immune to data refreshes
+  const col = type==='conflict'?'#f43f5e' : type==='vessel'?'#2979ff' : type==='cyber'?'#00e5ff' : 'rgba(220,240,255,1)';
+  globeHighlight = { lat: parseFloat(lat), lng: parseFloat(lng), col, pulse: 0 };
+  setTimeout(() => { globeHighlight = null; }, 4000);
 }
 window.selectEntityFromList = selectEntityFromList;
 
@@ -8625,34 +8618,22 @@ function drawHighlights() {
     }
   }
 
-  // Single entity highlight (from list click)
-  if (globeHighlight) {
+  // Single entity highlight (from list click) — uses stored coords, no re-lookup
+  if (globeHighlight && globeHighlight.lat != null) {
     globeHighlight.pulse = (globeHighlight.pulse || 0) + 1;
     const gp = Math.sin(globeHighlight.pulse * 0.2) * 0.5 + 0.5;
-    let lat, lng, col = '#00ffb3';
-    if (globeHighlight.type === 'flight') {
-      const f = flights.find(f => f.id === globeHighlight.id);
-      if (f) { const pos = f.livePos || {lat:f.fromLat,lng:f.fromLng}; lat=pos.lat; lng=pos.lng; col='rgba(220,240,255,1)'; }
-    } else if (globeHighlight.type === 'vessel') {
-      const v = vessels.find(v => v.id === globeHighlight.id);
-      if (v) { lat=v.lat; lng=v.lng; col='#2979ff'; }
-    } else if (globeHighlight.type === 'conflict') {
-      const c = CONFLICTS.find(c => String(c.id) === globeHighlight.id);
-      if (c) { lat=c.lat; lng=c.lng; col='#f43f5e'; }
-    }
-    if (lat && lng) {
-      const p = project(lat, lng);
-      if (p && p[2] > 0.05) {
-        const [x, y] = p;
-        ctx.save();
-        for (let r = 12; r <= 36; r += 8) {
-          ctx.beginPath(); ctx.arc(x, y, r + gp * 12, 0, Math.PI*2);
-          ctx.strokeStyle = col; ctx.lineWidth = 1.5;
-          ctx.globalAlpha = (0.6 - r/60) * (0.5 + gp * 0.5);
-          ctx.stroke();
-        }
-        ctx.restore(); ctx.globalAlpha = 1;
+    const p = project(globeHighlight.lat, globeHighlight.lng);
+    if (p && p[2] > 0.05) {
+      const [x, y] = p;
+      const col = globeHighlight.col || '#00ffb3';
+      ctx.save();
+      for (let r = 12; r <= 36; r += 8) {
+        ctx.beginPath(); ctx.arc(x, y, r + gp * 12, 0, Math.PI*2);
+        ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+        ctx.globalAlpha = (0.6 - r/60) * (0.5 + gp * 0.5);
+        ctx.stroke();
       }
+      ctx.restore(); ctx.globalAlpha = 1;
     }
   }
 }
