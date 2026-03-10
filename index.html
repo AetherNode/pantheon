@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-<title>PANTHEON · Intelligence OS v14 · Live Global Situational Awareness</title>
+<title>PANTHEON · Intelligence OS Beta · Live Global Situational Awareness</title>
 <script>
 // Self-contained boot — no CDN dependencies required
 // topojson and d3 are only used for country outlines (optional enhancement)
@@ -1072,7 +1072,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
 ════════════════════════════════════ -->
 <div id="globe-branding">
   <div style="font-family:'Black Ops One',sans-serif;font-size:19px;color:rgba(0,229,255,.92);letter-spacing:1px;text-shadow:0 0 30px rgba(0,229,255,.6),0 0 60px rgba(0,229,255,.25);animation:glitch 10s infinite">PANTHEON</div>
-        <div style="font-family:var(--mono);font-size:9px;color:rgba(0,229,255,.78);letter-spacing:1.5px;margin-top:3px">INTELLIGENCE OS · v14.0 · LIVE GLOBAL AWARENESS</div>
+        <div style="font-family:var(--mono);font-size:9px;color:rgba(0,229,255,.78);letter-spacing:1.5px;margin-top:3px">INTELLIGENCE OS · Beta · LIVE GLOBAL AWARENESS</div>
   <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap" id="layer-toggles">
     <div id="layer-day-night" class="layer-toggle on" onclick="toggleLayer('dayNight')" title="Day/Night">☽ D/N</div>
     <div id="layer-cables" class="layer-toggle on" onclick="toggleLayer('cables')" title="Cables">⌇ CABLE</div>
@@ -3082,87 +3082,95 @@ function drawCables() {
   ctx.setLineDash([]);
 }
 
-// ── Day/Night Terminator — correct solar geometry
+// ══════════════════════════════════════════════════════════════
+// CINEMATIC DAY/NIGHT — terminator & night overlay
+// ══════════════════════════════════════════════════════════════
 function drawDayNight() {
   const now = new Date();
-  // Solar declination (axial tilt effect across the year)
   const jd = (now - new Date(now.getFullYear(), 0, 0)) / 86400000;
   const decl = -23.4374 * Math.cos(2 * Math.PI * (jd + 10) / 365.25) * Math.PI / 180;
-  // Sub-solar point longitude: sun is overhead at solar noon longitude
   const utcH = now.getUTCHours() + now.getUTCMinutes()/60 + now.getUTCSeconds()/3600;
-  const sunLng = (12 - utcH) * 15;   // degrees: positive = west of Greenwich
+  const sunLng = (12 - utcH) * 15;
   const sunLat = decl * 180 / Math.PI;
 
-  // Helper: is a globe point in night? dot product of point with sun vector < 0
   const toXYZ = (latDeg, lngDeg) => {
     const la = latDeg * Math.PI/180, lo = lngDeg * Math.PI/180;
     return [Math.cos(la)*Math.cos(lo), Math.cos(la)*Math.sin(lo), Math.sin(la)];
   };
   const sun = toXYZ(sunLat, sunLng);
-  const isNight = (lat, lng) => {
+  // Returns dot product of point with sun: +1 = directly facing, -1 = opposite
+  const sunDot = (lat, lng) => {
     const v = toXYZ(lat, lng);
-    return (v[0]*sun[0] + v[1]*sun[1] + v[2]*sun[2]) < 0;
+    return v[0]*sun[0] + v[1]*sun[1] + v[2]*sun[2];
   };
 
   ctx.save();
   ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI*2); ctx.clip();
 
-  // Raster approach: scan the visible globe pixel columns and draw night overlay
-  // Build terminator polyline by walking latitudes at step resolution
-  const STEP = 1.5; // degrees — enough fidelity, not too slow
-  const termPts = [];  // projected terminator points for the glow line
-
-  // Draw night overlay: for each latitude row scan across longitude
-  // Efficiently done by finding terminator lng per lat row and filling the night arc
+  // ── 1. NIGHT OVERLAY with colour shift ──────────────────────
+  // Use sunDot per strip to blend opacity — deep navy in full dark,
+  // warm amber tinge in the twilight band (~±12° from terminator).
+  const STEP = 1.5;
   for (let lat = -90; lat <= 90; lat += STEP) {
-    // Find the two terminator longitudes at this latitude
-    // cos(zenith) = sin(lat)sin(decl) + cos(lat)cos(decl)cos(H) = 0  =>  cos(H) = -tan(lat)*tan(decl)
     const tanProd = Math.tan(lat * Math.PI/180) * Math.tan(decl);
     let lngA, lngB;
-    if (tanProd <= -1) {
-      // Midnight sun — fully day, no night at this latitude
-      continue;
-    } else if (tanProd >= 1) {
-      // Polar night — fully night, fill the entire latitude ring
+    if (tanProd <= -1) continue; // midnight sun — skip
+    if (tanProd >= 1) {
       lngA = sunLng - 180; lngB = sunLng + 180;
     } else {
       const H = Math.acos(-tanProd) * 180 / Math.PI;
-      lngA = sunLng - H;   // night start (west)
-      lngB = sunLng + H;   // night end (east) — going the long way
+      lngA = sunLng - H; lngB = sunLng + H;
     }
-
-    // Draw night arc from lngB to lngA+360 (the night side, away from sun)
-    // Night is the arc that does NOT contain the sub-solar longitude
-    // Walk it in steps and draw as a thin filled strip
     const latNext = Math.min(lat + STEP, 90);
-    ctx.beginPath();
-    let started = false;
-
-    // Night arc: from lngB going eastward (away from sun) to lngA+360
     const nightLen = ((lngA + 360) - lngB + 360) % 360;
     const arcSteps = Math.ceil(nightLen / STEP) + 1;
 
+    // Sample sunDot at midpoint of this strip to decide colour
+    const midLo = lngB + nightLen / 2;
+    const dot = sunDot(lat, midLo);
+    // dot ranges from ~0 (terminator) to ~-1 (deep night)
+    // Twilight band: dot in [-0.18, 0] → warm golden-magenta tinge
+    // Deep night: dot < -0.18 → deep blue-navy
+    let fillStyle;
+    if (dot > -0.12) {
+      // Civil/nautical twilight band — dusky amber-violet
+      const t = Math.max(0, Math.min(1, -dot / 0.12));
+      const alpha = 0.18 + t * 0.28;
+      fillStyle = `rgba(20,8,40,${alpha.toFixed(3)})`;
+    } else if (dot > -0.35) {
+      // Astronomical twilight to early night — deep indigo
+      const t = (-dot - 0.12) / 0.23;
+      const alpha = 0.42 + t * 0.18;
+      fillStyle = `rgba(4,6,28,${alpha.toFixed(3)})`;
+    } else {
+      // Deep night — rich near-black navy
+      fillStyle = 'rgba(1,3,18,0.62)';
+    }
+
+    ctx.beginPath();
+    let started = false;
     for (let s = 0; s <= arcSteps; s++) {
       const lo = lngB + (s / arcSteps) * nightLen;
       const p = project(lat, lo);
       if (!p) { started = false; continue; }
       started ? ctx.lineTo(p[0], p[1]) : (ctx.moveTo(p[0], p[1]), started = true);
     }
-    // Walk back along next latitude (close the strip)
     for (let s = arcSteps; s >= 0; s--) {
       const lo = lngB + (s / arcSteps) * nightLen;
       const p = project(latNext, lo);
       if (p) ctx.lineTo(p[0], p[1]);
     }
     ctx.closePath();
-    ctx.fillStyle = "rgba(0,4,18,0.32)";
+    ctx.fillStyle = fillStyle;
     ctx.fill();
   }
 
-  // Terminator glow line — walk the terminator at both H and -H
+  // ── 2. TERMINATOR — multi-layer gradient band ───────────────
+  // Walk both edges of the terminator and draw 4 overlapping glow passes
+  // from wide+dim to narrow+bright, creating a soft atmospheric limb.
   const termLine = (sign) => {
     const pts = [];
-    for (let lat = -88; lat <= 88; lat += STEP) {
+    for (let lat = -89; lat <= 89; lat += 0.8) {
       const tanProd = Math.tan(lat * Math.PI/180) * Math.tan(decl);
       if (Math.abs(tanProd) > 1) continue;
       const H = Math.acos(-tanProd) * 180 / Math.PI;
@@ -3173,27 +3181,40 @@ function drawDayNight() {
     return pts;
   };
 
+  // Outer glow passes (wide, dim) → inner passes (narrow, bright)
+  const termPasses = [
+    { width: 22, alpha: 0.06, color: '180,120,60' },   // wide warm corona
+    { width: 14, alpha: 0.10, color: '220,160,80' },   // mid warm
+    { width:  7, alpha: 0.18, color: '255,200,100' },  // inner amber
+    { width:  3, alpha: 0.55, color: '255,230,160' },  // bright core line
+    { width:  1, alpha: 0.90, color: '255,245,200' },  // crisp hot edge
+  ];
+
   [1, -1].forEach(sign => {
     const pts = termLine(sign);
     if (pts.length < 2) return;
-    ctx.beginPath();
-    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
-    ctx.strokeStyle = "rgba(251,191,36,0.5)";
-    ctx.lineWidth = 1.0;
-    ctx.shadowColor = "rgba(251,191,36,0.6)";
-    ctx.shadowBlur = 5;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+    termPasses.forEach(({ width, alpha, color }) => {
+      ctx.beginPath();
+      pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
+      ctx.strokeStyle = `rgba(${color},${alpha})`;
+      ctx.lineWidth = width;
+      if (width > 4) {
+        ctx.shadowColor = `rgba(${color},0.4)`;
+        ctx.shadowBlur = width * 1.8;
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    });
   });
 
-  // Night label on the anti-solar side
+  // ── Moon label on anti-solar point ──────────────────────────
   const labelPt = project(0, sunLng + 180);
   if (labelPt) {
-    ctx.font = `10px 'Questrial',sans-serif`;
-    ctx.fillStyle = "rgba(180,200,255,0.4)";
-    ctx.textAlign = "center";
-    ctx.fillText("☽", labelPt[0], labelPt[1]);
-    ctx.textAlign = "left";
+    ctx.font = `12px 'Questrial',sans-serif`;
+    ctx.fillStyle = 'rgba(200,220,255,0.45)';
+    ctx.textAlign = 'center';
+    ctx.fillText('☽', labelPt[0], labelPt[1]);
+    ctx.textAlign = 'left';
   }
 
   ctx.restore();
@@ -4275,21 +4296,32 @@ function handleGlobeClick(e) {
       }
       if (entLat != null && entLng != null) {
         autoRotate = false; velX = 0; velY = 0;
-        // Animate globe rotation to center on entity
-        const targetRotX = -entLng; // rotX is lng offset
-        const targetRotY = -entLat; // rotY is lat offset (inverted)
-        const targetR = Math.min(W, H) * 1.8; // zoom in
-        const steps = 40;
+
+        const rawTargetRotX = -entLng;
+        let dRX = ((rawTargetRotX - rotX) % 360 + 540) % 360 - 180;
+        const startRotX = rotX;
+        const targetRotX = rotX + dRX;
+
+        const targetRotY = Math.max(-85, Math.min(85, entLat));
+        const startRotY = rotY;
+
+        const targetR = Math.min(W, H) * 1.8;
+        const startR = R;
+
+        const steps = 50;
         let step = 0;
-        const dRX = targetRotX - rotX, dRY = targetRotY - rotY, dR = targetR - R;
-        const zoomAnim = setInterval(() => {
+        if (window._zoomAnim) clearInterval(window._zoomAnim);
+        window._zoomAnim = setInterval(() => {
           step++;
           const t = step / steps;
-          const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // ease in-out
-          rotX = rotX + dRX * (ease - (step > 1 ? (step-1)/steps < 0.5 ? 2*((step-1)/steps)*((step-1)/steps) : -1+(4-2*(step-1)/steps)*(step-1)/steps : 0));
-          rotY = Math.max(-85, Math.min(85, rotY + dRY * (ease - (step > 1 ? (step-1)/steps < 0.5 ? 2*((step-1)/steps)*((step-1)/steps) : -1+(4-2*(step-1)/steps)*(step-1)/steps : 0))));
-          R = R + dR / steps;
-          if (step >= steps) clearInterval(zoomAnim);
+          const ease = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+          rotX = startRotX + dRX * ease;
+          rotY = startRotY + (targetRotY - startRotY) * ease;
+          R    = startR    + (targetR    - startR)    * ease;
+          if (step >= steps) {
+            rotX = targetRotX; rotY = targetRotY; R = targetR;
+            clearInterval(window._zoomAnim); window._zoomAnim = null;
+          }
         }, 16);
       }
       showDetailPanel(best.type, best.data);
@@ -4672,7 +4704,7 @@ function renderNav(){
       </div>
       <div>
         <div style="font-family:'Black Ops One',sans-serif;font-size:${isMob?'15':'18'}px;color:rgba(0,229,255,.95);letter-spacing:1px;text-shadow:0 0 20px rgba(0,229,255,.5)">PANTHEON</div>
-        ${isMob?'':`<div style="font-family:var(--mono);font-size:9px;color:rgba(0,229,255,.78);letter-spacing:1.5px">INTELLIGENCE OS v14.0 · LIVE</div>`}
+        ${isMob?'':`<div style="font-family:var(--mono);font-size:9px;color:rgba(0,229,255,.78);letter-spacing:1.5px">INTELLIGENCE OS Beta · LIVE</div>`}
       </div>
     </div>
     ${isMob?'':`<div style="width:1px;height:24px;background:rgba(0,229,255,.1)"></div>`}
@@ -8142,7 +8174,7 @@ function showDataStatus() {
     </div>
   </div>`;
 
-  modal(`${mHead('◈ LIVE DATA FEED STATUS · v14','#00ff88')}
+  modal(`${mHead('◈ LIVE DATA FEED STATUS · Beta','#00ff88')}
 <div style="flex:1;overflow-y:auto;padding:16px">
   <div style="color:rgba(0,229,255,.82);font-size:12px;font-family:var(--mono);margin-bottom:12px;letter-spacing:1px">
     Real-time status of all ${totalCount} integrated data sources. Green = receiving data. Red = connection failed. Each source attempted with CORS proxy fallback chain.
@@ -10210,7 +10242,7 @@ function takeSnapshot() {
     `CONFLICTS: ${CONFLICTS.length}\nCYBER THREATS: ${CYBER.length}\nLIVE FLIGHTS: ${flights.length}\nVESSELS: ${vessels.length}\n\n` +
     `TOP ALERTS:\n${ALERTS.slice(0,5).map(a=>`  [${a.sev}] ${a.title}`).join('\n')}\n\n` +
     `MARKET SNAPSHOT:\n${MARKETS.slice(0,5).map(m=>`  ${m.asset}: ${m.price} ${m.unit} (${m.up?'+':''}${m.chg}%)`).join('\n')}\n\n` +
-    `Generated by PANTHEON Intelligence OS v14.0`;
+    `Generated by PANTHEON Intelligence OS Beta`;
   const blob = new Blob([summary], {type:'text/plain'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=`PANTHEON_SNAPSHOT_${ts}.txt`; a.click();
