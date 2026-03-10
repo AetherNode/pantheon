@@ -578,70 +578,109 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
 #timeline-panel {
   left:58px;right:calc(var(--panel-w)+14px);
   bottom:calc(var(--status-h)+var(--keys-h)+10px);
-  height:360px;
+  height:400px;
 }
-/* ── vis.js full dark theme ── */
-#vis-timeline { background:transparent!important; }
+/* ── Timeline feed ── */
+#tl-feed {
+  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(0,229,255,.15) transparent;
+}
+#tl-feed::-webkit-scrollbar { width:3px; }
+#tl-feed::-webkit-scrollbar-thumb { background:rgba(0,229,255,.18);border-radius:2px; }
 
-/* ── vis.js tooltip — force proper containment ── */
-.vis-tooltip {
-  max-width:260px!important;
-  white-space:normal!important;
-  word-break:break-word!important;
-  overflow-wrap:anywhere!important;
-  overflow:hidden!important;
-  background:transparent!important;
-  border:none!important;
-  padding:0!important;
-  box-shadow:none!important;
-  pointer-events:none;
+.tl-day-group { flex-shrink:0; }
+.tl-day-hdr {
+  position:sticky;top:0;z-index:2;
+  display:flex;align-items:center;gap:8px;
+  padding:6px 14px 5px;
+  background:rgba(1,5,16,.97);
+  border-bottom:1px solid rgba(0,229,255,.07);
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  letter-spacing:1.4px;color:rgba(0,229,255,.55);
 }
-#vis-timeline .vis-item {
-  border-color:rgba(0,229,255,.55)!important;
-  background:rgba(0,229,255,.08)!important;
-  color:rgba(235,245,255,.88)!important;
-  font-family:var(--mono)!important;
-  font-size:12px!important;
-  border-radius:4px!important;
-  padding:3px 8px!important;
-  min-height:28px!important;
-  line-height:1.5!important;
+.tl-day-hdr-line { flex:1;height:1px;background:rgba(0,229,255,.08); }
+
+.tl-event {
+  display:flex;align-items:flex-start;gap:0;
+  padding:0 14px;
+  cursor:pointer;
+  transition:background .1s;
+  border-bottom:1px solid rgba(255,255,255,.03);
 }
-#vis-timeline .vis-item.vis-selected {
-  border-color:rgba(0,229,255,.9)!important;
-  background:rgba(0,229,255,.18)!important;
-  box-shadow:0 0 10px rgba(0,229,255,.25)!important;
+.tl-event:hover { background:rgba(0,229,255,.04); }
+.tl-event:hover .tl-event-body { border-left-color:rgba(0,229,255,.35); }
+.tl-event.selected { background:rgba(0,229,255,.06); }
+.tl-event.selected .tl-event-body { border-left-color:rgba(0,229,255,.7); }
+
+.tl-time-col {
+  width:46px;flex-shrink:0;padding:11px 10px 11px 0;
+  font-family:var(--mono);font-size:10px;
+  color:rgba(120,150,185,.45);text-align:right;
+  line-height:1.3;
 }
-#vis-timeline .vis-item .vis-item-content {
-  font-size:12px!important;
-  padding:3px 8px!important;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:200px;
+.tl-dot-col {
+  width:18px;flex-shrink:0;display:flex;flex-direction:column;
+  align-items:center;padding-top:15px;
 }
-#vis-timeline .vis-label {
-  font-family:var(--mono)!important;
-  font-size:11.5px!important;
-  font-weight:700!important;
-  color:rgba(200,220,255,.8)!important;
-  padding:0 12px!important;
-  background:rgba(1,6,18,.9)!important;
-  border-right:1px solid rgba(0,229,255,.1)!important;
-  border-bottom:1px solid rgba(0,229,255,.06)!important;
-  letter-spacing:.5px!important;
+.tl-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.tl-dot-line { flex:1;width:1px;background:rgba(255,255,255,.06);min-height:8px; }
+
+.tl-event-body {
+  flex:1;min-width:0;padding:10px 0 10px 12px;
+  border-left:2px solid transparent;
+  transition:border-color .1s;
 }
-#vis-timeline .vis-time-axis .vis-text {
-  font-family:var(--mono)!important;
-  font-size:11px!important;
-  color:rgba(0,229,255,.6)!important;
+.tl-event-cat {
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:1.2px;margin-bottom:3px;
+  display:flex;align-items:center;gap:6px;
 }
-#vis-timeline .vis-time-axis { color:rgba(0,229,255,.65)!important;font-family:var(--mono)!important; }
-#vis-timeline .vis-grid.vis-minor { border-color:rgba(0,229,255,.05)!important; }
-#vis-timeline .vis-grid.vis-major { border-color:rgba(0,229,255,.1)!important; }
-#vis-timeline .vis-current-time { background:rgba(0,229,255,.7)!important;width:2px!important; }
-#vis-timeline .vis-panel.vis-background,
-#vis-timeline .vis-panel.vis-center { background:transparent!important; }
+.tl-event-title {
+  font-size:12.5px;font-weight:700;color:rgba(232,244,255,.9);
+  line-height:1.35;margin-bottom:3px;
+  overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.tl-event-sub {
+  font-size:11px;color:rgba(150,175,210,.55);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.tl-event-tags { display:flex;gap:4px;margin-top:5px;flex-wrap:wrap; }
+.tl-tag {
+  font-family:var(--mono);font-size:9.5px;padding:1px 6px;
+  border-radius:3px;white-space:nowrap;
+}
+
+/* Detail panel */
+#tl-detail {
+  flex-shrink:0;max-height:0;overflow:hidden;
+  transition:max-height .25s ease;
+  background:rgba(0,8,22,.98);
+  border-top:1px solid rgba(0,229,255,.12);
+}
+#tl-detail.open { max-height:160px; }
+#tl-detail-inner {
+  padding:12px 16px 14px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.tl-detail-row { display:flex;align-items:flex-start;gap:10px; }
+.tl-detail-title {
+  font-family:var(--mono);font-size:14px;font-weight:700;
+  color:#fff;flex:1;min-width:0;line-height:1.3;
+}
+.tl-detail-meta {
+  font-family:var(--mono);font-size:11px;
+  color:rgba(160,190,220,.65);line-height:1.7;
+  border-left:2px solid transparent;padding-left:10px;
+}
+
+/* Category filter tabs */
+.tl-tab {
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  letter-spacing:.8px;padding:3px 10px;border-radius:4px;
+  border:1px solid transparent;cursor:pointer;
+  transition:all .12s;background:transparent;
+}
 
 /* ══ SEARCH BAR ══ */
 #global-search {
@@ -1196,146 +1235,99 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
 }
 #radar-panel.visible { display:flex!important; }
 
-/* ── PRIORITY STRIP ── */
-#tb-crit-strip {
-  flex-shrink:0;border-bottom:1px solid rgba(244,63,94,.18);
-  background:rgba(244,63,94,.03);min-height:0;
+/* ── SINGLE SCROLLABLE FEED ── */
+#tb-feed {
+  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  padding:10px 16px 20px;
+  display:flex;flex-direction:column;gap:6px;
+  scrollbar-width:thin;scrollbar-color:rgba(0,229,255,.18) transparent;
 }
-#tb-crit-strip-inner {
-  display:flex;align-items:center;gap:6px;padding:4px 12px;
-}
-#tb-crit-scroll {
-  display:flex;gap:8px;padding:6px 10px 8px;
-  overflow-x:auto;overflow-y:visible;scrollbar-width:none;
-  min-height:100px;
-}
-#tb-crit-scroll::-webkit-scrollbar { display:none; }
-.tb-crit-card {
-  flex-shrink:0;width:260px;min-height:88px;
-  background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.3);
-  border-left:3px solid #f43f5e;border-radius:7px;padding:10px 13px;
-  cursor:pointer;transition:background .15s;
-  display:flex;flex-direction:column;
-}
-.tb-crit-card:hover { background:rgba(244,63,94,.13); }
-.tb-crit-sector { font-size:9px;letter-spacing:1.4px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-shrink:0; }
-.tb-crit-title { font-size:13px;font-weight:700;color:#fff;line-height:1.35;margin-bottom:4px;overflow-wrap:anywhere;word-break:break-word; }
-.tb-crit-summary { font-size:11.5px;color:rgba(210,225,255,.65);line-height:1.45;margin-bottom:6px;flex:1;overflow-wrap:anywhere;word-break:break-word; }
-.tb-crit-meta { font-size:10px;color:rgba(244,63,94,.55);display:flex;gap:8px;align-items:center;flex-shrink:0;margin-top:auto; }
+#tb-feed::-webkit-scrollbar { width:3px; }
+#tb-feed::-webkit-scrollbar-thumb { background:rgba(0,229,255,.2);border-radius:2px; }
 
-/* ── MAIN BODY ── */
-#tb-main-body { flex:1;min-height:0;display:flex;position:relative;overflow:hidden; }
-
-/* ── LEFT: Conflict Theatres ── */
-#tb-left { width:44%;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.05);overflow:hidden;min-width:280px; }
-#tb-theatre-list { flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:rgba(0,229,255,.15) transparent; }
-
-.tb-theatre {
-  border:1px solid rgba(255,255,255,.06);border-radius:7px;overflow:hidden;
-  background:rgba(3,10,24,.65);
+/* ── SECTION DIVIDER ── */
+.tb-section-hdr {
+  display:flex;align-items:center;gap:8px;
+  padding:10px 2px 5px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+  position:sticky;top:0;
+  background:rgba(1,4,14,.97);
+  z-index:2;
 }
-.tb-theatre-hd {
-  display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;
-  transition:background .12s;
+.tb-section-hdr-title {
+  font-size:9.5px;font-weight:700;letter-spacing:1.6px;
+  text-transform:uppercase;
 }
-.tb-theatre-hd:hover { background:rgba(0,229,255,.03); }
-.tb-theatre-flag {
-  width:4px;align-self:stretch;border-radius:2px;flex-shrink:0;
-}
-.tb-theatre-name { font-size:13px;font-weight:700;color:rgba(235,245,255,.92);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0; }
-.tb-theatre-pills { display:flex;gap:3px;align-items:center;flex-shrink:0; }
-.tb-theatre-bd {
-  padding:5px 10px 8px;border-top:1px solid rgba(255,255,255,.04);
-  display:flex;flex-direction:column;gap:3px;
-}
-.tb-theatre-bd.hidden { display:none; }
-
-.tb-incident {
-  display:flex;align-items:flex-start;gap:8px;
-  padding:6px 8px;border-radius:5px;cursor:pointer;
-  background:rgba(255,255,255,.02);border-left:2px solid transparent;
-  transition:all .1s;
-}
-.tb-incident:hover { background:rgba(255,255,255,.05); }
-.tb-inc-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px; }
-.tb-inc-body { flex:1;min-width:0;overflow:hidden; }
-.tb-inc-title { font-size:12px;font-weight:600;color:rgba(230,242,255,.88);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; }
-.tb-inc-type { font-size:10.5px;color:rgba(170,195,225,.5);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.tb-inc-actors { font-size:10.5px;color:rgba(170,195,225,.65);margin-top:2px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.tb-inc-tags { display:flex;gap:3px;margin-top:4px;flex-wrap:wrap; }
-.tb-inc-age { font-size:9.5px;color:rgba(140,165,195,.38);flex-shrink:0;margin-left:auto;white-space:nowrap; }
-
-/* ── RIGHT SIDE ── */
-#tb-right { flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden; }
-
-/* Cyber — top 56% */
-#tb-cyber-wrap { flex:0 0 56%;min-height:0;display:flex;flex-direction:column;border-bottom:1px solid rgba(0,229,255,.08);overflow:hidden; }
-#tb-cyber-list { flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:3px;scrollbar-width:thin;scrollbar-color:rgba(0,229,255,.15) transparent; }
-
-.tb-cv-row {
-  display:flex;align-items:center;gap:9px;padding:7px 10px;
-  border-radius:6px;background:rgba(3,10,24,.7);
-  border:1px solid rgba(0,229,255,.06);border-left:3px solid transparent;
-  cursor:pointer;transition:all .1s;
-}
-.tb-cv-row:hover { background:rgba(0,229,255,.05);border-color:rgba(0,229,255,.18); }
-.tb-cv-score {
-  font-size:13px;font-weight:900;padding:3px 6px;border-radius:4px;
-  flex-shrink:0;min-width:32px;text-align:center;line-height:1.3;
-}
-.tb-cv-main { flex:1;min-width:0; }
-.tb-cv-cve { font-size:12.5px;font-weight:700;color:rgba(235,245,255,.9); }
-.tb-cv-sys { font-size:11px;color:rgba(150,175,210,.6);margin-top:1px; }
-.tb-cv-tags { display:flex;gap:3px;margin-top:3px;flex-wrap:wrap; }
-.tb-cv-age { font-size:9.5px;color:rgba(140,165,195,.38);flex-shrink:0; }
-
-/* Bottom half: Markets + Env */
-#tb-bottom { flex:1;min-height:0;display:flex;overflow:hidden; }
-#tb-mkt-wrap { flex:1;min-width:0;display:flex;flex-direction:column;border-right:1px solid rgba(251,191,36,.07);overflow:hidden; }
-#tb-mkt-grid { flex:1;overflow-y:auto;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:4px;align-content:start;scrollbar-width:thin;scrollbar-color:rgba(251,191,36,.15) transparent; }
-.tb-mkt-cell {
-  padding:7px 9px;border-radius:5px;
-  background:rgba(3,10,24,.7);border:1px solid rgba(251,191,36,.07);
-  cursor:pointer;transition:all .1s;
-}
-.tb-mkt-cell:hover { background:rgba(251,191,36,.05); }
-.tb-mkt-name { font-size:11px;font-weight:700;color:rgba(220,235,255,.75); }
-.tb-mkt-price { font-size:14px;font-weight:900;margin-top:2px;line-height:1; }
-.tb-mkt-chg { font-size:10.5px;margin-top:2px; }
-.tb-mkt-unit { font-size:9.5px;color:rgba(170,190,220,.38);margin-top:1px; }
-
-#tb-env-wrap { width:35%;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden; }
-#tb-env-list { flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:4px;scrollbar-width:thin;scrollbar-color:rgba(0,255,179,.15) transparent; }
-.tb-env-row {
-  padding:8px 10px;border-radius:6px;
-  background:rgba(3,10,24,.7);border:1px solid rgba(0,255,179,.07);
-  border-left:3px solid transparent;cursor:pointer;transition:all .1s;
-}
-.tb-env-row:hover { background:rgba(0,255,179,.04); }
-.tb-env-title { font-size:12px;font-weight:600;color:rgba(235,245,255,.88); }
-.tb-env-sub { font-size:10.5px;color:rgba(150,180,200,.55);margin-top:2px; }
-.tb-env-tags { display:flex;gap:3px;margin-top:5px;flex-wrap:wrap; }
-
-/* Shared section header */
-.tb-shdr {
-  flex-shrink:0;padding:7px 12px;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  background:rgba(1,5,15,.97);
-  display:flex;align-items:center;gap:7px;
-}
-.tb-shdr-title { font-size:10px;font-weight:700;letter-spacing:1.4px; }
-.tb-shdr-ct {
-  font-size:9.5px;padding:1px 6px;border-radius:3px;
-  font-family:var(--mono);margin-left:auto;
+.tb-section-ct {
+  font-size:9px;padding:1px 7px;border-radius:3px;font-family:var(--mono);
+  margin-left:auto;
 }
 
-/* Tag pill */
+/* ── UNIFIED THREAT CARD ── */
+.tb-card {
+  display:flex;align-items:flex-start;gap:11px;
+  padding:10px 13px;border-radius:7px;
+  background:rgba(3,10,24,.70);
+  border:1px solid rgba(255,255,255,.055);
+  border-left:3px solid transparent;
+  cursor:pointer;transition:background .12s, border-color .12s;
+  position:relative;
+}
+.tb-card:hover {
+  background:rgba(5,16,38,.88);
+  border-color:rgba(0,229,255,.18);
+}
+.tb-card-dot {
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;
+}
+.tb-card-body { flex:1;min-width:0; }
+.tb-card-title {
+  font-size:12.5px;font-weight:700;color:rgba(232,244,255,.92);
+  line-height:1.35;
+  overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.tb-card-sub {
+  font-size:11px;color:rgba(155,180,210,.55);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.tb-card-desc {
+  font-size:11px;color:rgba(180,205,230,.65);margin-top:4px;line-height:1.5;
+  overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.tb-card-footer {
+  display:flex;gap:5px;align-items:center;margin-top:6px;flex-wrap:wrap;
+}
+.tb-card-age {
+  font-size:9.5px;color:rgba(120,148,180,.38);flex-shrink:0;
+  position:absolute;top:10px;right:12px;
+}
+
+/* ── PILL ── */
 .tb-pill {
   display:inline-block;font-size:9.5px;padding:1px 6px;
   border-radius:3px;white-space:nowrap;font-family:var(--mono);
 }
 
-/* Detail overlay */
+/* ── MARKET STRIP ── */
+.tb-mkt-strip {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:5px;padding:2px 0 6px;
+}
+.tb-mkt-tile {
+  padding:8px 10px;border-radius:6px;
+  background:rgba(3,10,24,.75);border:1px solid rgba(251,191,36,.08);
+  cursor:pointer;transition:background .12s;
+}
+.tb-mkt-tile:hover { background:rgba(251,191,36,.05); }
+.tb-mkt-tile-name { font-size:10px;font-weight:700;color:rgba(210,228,255,.65); }
+.tb-mkt-tile-price { font-size:14.5px;font-weight:900;margin-top:2px;line-height:1; }
+.tb-mkt-tile-chg { font-size:10.5px;margin-top:1px; }
+.tb-mkt-tile-unit { font-size:9px;color:rgba(160,185,210,.35);margin-top:1px; }
+
+/* ── DETAIL OVERLAY ── */
 #tb-detail-overlay {
   position:absolute;inset:0;z-index:10;
   background:rgba(1,5,16,.97);backdrop-filter:blur(16px);
@@ -1349,15 +1341,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
 .tb-det-stat-value { font-size:14px;font-weight:700; }
 
 @media (max-width:768px) {
-  #tb-main-body { flex-direction:column;overflow-y:auto; }
-  #tb-left { width:100%;flex:none;border-right:none;border-bottom:1px solid rgba(255,255,255,.05);max-height:50vh; }
-  #tb-right { flex:none; }
-  #tb-cyber-wrap { flex:none;max-height:42vh; }
-  #tb-bottom { flex-direction:column; }
-  #tb-mkt-wrap { border-right:none;border-bottom:1px solid rgba(251,191,36,.07);max-height:36vh; }
-  #tb-env-wrap { width:100%;max-height:28vh; }
+  #tb-feed { padding:8px 10px 16px; }
   #tb-det-grid { grid-template-columns:1fr 1fr !important; }
-  #tb-detail-overlay { padding:16px; }
+  #tb-detail-overlay { padding:14px; }
 }
 </style>
 
@@ -1366,97 +1352,40 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
     <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:rgba(244,63,94,.85);flex-shrink:0"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="4.5" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1"/><line x1="8" y1="1" x2="8" y2="3.5" stroke="currentColor" stroke-width="1.2"/><line x1="15" y1="8" x2="12.5" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
     <span class="module-title">THREAT BOARD</span>
-    <div id="radar-threat-count" style="font-family:var(--mono);font-size:11px;color:rgba(244,63,94,.7);background:rgba(244,63,94,.09);border:1px solid rgba(244,63,94,.22);padding:2px 9px;border-radius:4px;margin-right:4px">— ACTIVE</div>
-    <div id="tb-filter-bar" style="display:flex;gap:3px;margin-right:8px">
-      <button onclick="setTbFilter('all')" id="tbf-all" class="tb-filter-btn active" style="font-family:var(--mono);font-size:10px;padding:3px 8px;border:1px solid rgba(0,229,255,.3);background:rgba(0,229,255,.1);color:rgba(0,229,255,.9);border-radius:4px;cursor:pointer;transition:all .15s">ALL</button>
-      <button onclick="setTbFilter('critical')" id="tbf-critical" class="tb-filter-btn" style="font-family:var(--mono);font-size:10px;padding:3px 8px;border:1px solid rgba(244,63,94,.2);background:transparent;color:rgba(244,63,94,.6);border-radius:4px;cursor:pointer;transition:all .15s">CRIT</button>
-      <button onclick="setTbFilter('high')" id="tbf-high" class="tb-filter-btn" style="font-family:var(--mono);font-size:10px;padding:3px 8px;border:1px solid rgba(251,146,60,.2);background:transparent;color:rgba(251,146,60,.6);border-radius:4px;cursor:pointer;transition:all .15s">HIGH+</button>
-    </div>
+    <div id="radar-threat-count" style="font-family:var(--mono);font-size:11px;color:rgba(244,63,94,.7);background:rgba(244,63,94,.09);border:1px solid rgba(244,63,94,.22);padding:2px 9px;border-radius:4px;margin-right:8px">— ACTIVE</div>
     <div style="font-family:var(--mono);font-size:11px;color:rgba(244,63,94,.75);display:flex;align-items:center;gap:4px;margin-right:8px">
       <div style="width:6px;height:6px;border-radius:50%;background:#f43f5e;animation:pulseRed .8s infinite"></div>LIVE
     </div>
     <button class="btn-maximise" onclick="toggleMaximise('radar-panel')" title="Maximise / restore" style="z-index:1">⤢</button><button class="module-close" onclick="dockToggle('radar')" style="z-index:1">✕</button>
   </div>
 
-  <!-- PRIORITY SIGNALS STRIP -->
-  <div id="tb-crit-strip">
-    <div id="tb-crit-strip-inner">
-      <div style="width:6px;height:6px;border-radius:50%;background:#f43f5e;animation:pulseRed .8s infinite;flex-shrink:0"></div>
-      <span style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;color:rgba(244,63,94,.8)">PRIORITY SIGNALS</span>
-      <span id="tb-crit-count" style="font-size:9px;color:rgba(244,63,94,.5)"></span>
+  <!-- SINGLE SCROLLABLE THREAT FEED -->
+  <div id="tb-feed"></div>
+
+  <!-- DETAIL OVERLAY -->
+  <div id="tb-detail-overlay">
+    <button onclick="closeTbDetail()" style="align-self:flex-start;display:flex;align-items:center;gap:6px;background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.18);color:rgba(0,229,255,.75);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:11px;margin-bottom:20px;flex-shrink:0">
+      <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><polyline points="5,1 1,5 5,9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      BACK TO BOARD
+    </button>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;flex-shrink:0">
+      <div id="tb-det-dot" style="width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:4px"></div>
+      <div style="flex:1;min-width:0">
+        <div id="tb-det-title" style="font-family:var(--mono);font-size:20px;font-weight:700;color:#fff;line-height:1.25;word-break:break-word"></div>
+        <div id="tb-det-sector" style="font-family:var(--mono);font-size:11px;letter-spacing:1.2px;margin-top:5px;opacity:.7"></div>
+      </div>
+      <span id="tb-det-sev" style="font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:5px;flex-shrink:0;letter-spacing:.8px"></span>
     </div>
-    <div id="tb-crit-scroll"></div>
+    <div id="tb-det-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex-shrink:0;margin-bottom:20px"></div>
+    <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:8px;padding:16px;flex-shrink:0;margin-bottom:20px">
+      <div style="font-family:var(--mono);font-size:10px;color:rgba(0,229,255,.45);letter-spacing:1px;margin-bottom:8px">ASSESSMENT</div>
+      <div id="tb-det-desc" style="font-family:var(--mono);font-size:13.5px;color:rgba(210,225,255,.82);line-height:1.85"></div>
+    </div>
+    <div style="flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="closeTbDetail();switchTab('CONFLICT')" style="font-family:var(--mono);font-size:11px;padding:8px 16px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:rgba(0,229,255,.85);border-radius:6px;cursor:pointer;letter-spacing:.6px">VIEW IN INTEL PANEL</button>
+      <button onclick="closeTbDetail();switchTab('CYBER')" style="font-family:var(--mono);font-size:11px;padding:8px 16px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);color:rgba(0,229,255,.6);border-radius:6px;cursor:pointer;letter-spacing:.6px">CYBER FEED</button>
+    </div>
   </div>
-
-  <div id="tb-main-body">
-    <!-- LEFT: Active Conflict Theatres -->
-    <div id="tb-left">
-      <div class="tb-shdr">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="1" y1="6" x2="11" y2="6" stroke="#fb923c" stroke-width="1.3"/><line x1="3" y1="1" x2="3" y2="11" stroke="#fb923c" stroke-width="1.3"/><line x1="9" y1="1" x2="9" y2="11" stroke="#fb923c" stroke-width="1.3"/></svg>
-        <span class="tb-shdr-title" style="color:#fb923c">ACTIVE CONFLICT THEATRES</span>
-        <span id="tb-theatre-ct" class="tb-shdr-ct" style="background:rgba(251,146,60,.09);color:rgba(251,146,60,.7);border:1px solid rgba(251,146,60,.2)">—</span>
-      </div>
-      <div id="tb-theatre-list"></div>
-    </div>
-
-    <!-- RIGHT -->
-    <div id="tb-right">
-      <!-- CYBER -->
-      <div id="tb-cyber-wrap">
-        <div class="tb-shdr">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L8 5H11L8.5 7.5L9.5 11L6 9L2.5 11L3.5 7.5L1 5H4L6 1Z" stroke="#00e5ff" stroke-width="1" fill="rgba(0,229,255,.12)"/></svg>
-          <span class="tb-shdr-title" style="color:#00e5ff">CYBER VULNERABILITIES</span>
-          <span id="tb-cyber-ct" class="tb-shdr-ct" style="background:rgba(0,229,255,.08);color:rgba(0,229,255,.7);border:1px solid rgba(0,229,255,.18)">—</span>
-        </div>
-        <div id="tb-cyber-list"></div>
-      </div>
-
-      <!-- MARKETS + ENV -->
-      <div id="tb-bottom">
-        <div id="tb-mkt-wrap">
-          <div class="tb-shdr">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="1,9 4,5 7,7 11,2" stroke="#fbbf24" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
-            <span class="tb-shdr-title" style="color:#fbbf24">MARKET INDICATORS</span>
-            <span id="tb-mkt-ct" class="tb-shdr-ct" style="background:rgba(251,191,36,.08);color:rgba(251,191,36,.7);border:1px solid rgba(251,191,36,.18)">—</span>
-          </div>
-          <div id="tb-mkt-grid"></div>
-        </div>
-        <div id="tb-env-wrap">
-          <div class="tb-shdr">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#00ffb3" stroke-width="1.1"/><path d="M6 4 C8 4 9 6 6 8 C3 6 4 4 6 4Z" fill="rgba(0,255,179,.25)" stroke="#00ffb3" stroke-width="0.8"/></svg>
-            <span class="tb-shdr-title" style="color:#00ffb3">ENV / CBRN</span>
-            <span id="tb-env-ct" class="tb-shdr-ct" style="background:rgba(0,255,179,.08);color:rgba(0,255,179,.7);border:1px solid rgba(0,255,179,.18)">—</span>
-          </div>
-          <div id="tb-env-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- DETAIL OVERLAY -->
-    <div id="tb-detail-overlay">
-      <button onclick="closeTbDetail()" style="align-self:flex-start;display:flex;align-items:center;gap:6px;background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.18);color:rgba(0,229,255,.75);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:11px;margin-bottom:20px;flex-shrink:0">
-        <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><polyline points="5,1 1,5 5,9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        BACK TO BOARD
-      </button>
-      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;flex-shrink:0">
-        <div id="tb-det-dot" style="width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:4px"></div>
-        <div style="flex:1;min-width:0">
-          <div id="tb-det-title" style="font-family:var(--mono);font-size:20px;font-weight:700;color:#fff;line-height:1.25;word-break:break-word"></div>
-          <div id="tb-det-sector" style="font-family:var(--mono);font-size:11px;letter-spacing:1.2px;margin-top:5px;opacity:.7"></div>
-        </div>
-        <span id="tb-det-sev" style="font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:5px;flex-shrink:0;letter-spacing:.8px"></span>
-      </div>
-      <div id="tb-det-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex-shrink:0;margin-bottom:20px"></div>
-      <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:8px;padding:16px;flex-shrink:0;margin-bottom:20px">
-        <div style="font-family:var(--mono);font-size:10px;color:rgba(0,229,255,.45);letter-spacing:1px;margin-bottom:8px">ASSESSMENT</div>
-        <div id="tb-det-desc" style="font-family:var(--mono);font-size:13.5px;color:rgba(210,225,255,.82);line-height:1.85"></div>
-      </div>
-      <div style="flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="closeTbDetail();switchTab('CONFLICT')" style="font-family:var(--mono);font-size:11px;padding:8px 16px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:rgba(0,229,255,.85);border-radius:6px;cursor:pointer;letter-spacing:.6px">VIEW IN INTEL PANEL</button>
-        <button onclick="closeTbDetail();switchTab('CYBER')" style="font-family:var(--mono);font-size:11px;padding:8px 16px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);color:rgba(0,229,255,.6);border-radius:6px;cursor:pointer;letter-spacing:.6px">CYBER FEED</button>
-      </div>
-    </div>
-  </div><!-- /tb-main-body -->
 
   <canvas id="radar-canvas" style="display:none"></canvas>
   <div id="radar-threat-list" style="display:none"></div>
@@ -1474,14 +1403,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
     <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
     <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="color:rgba(0,255,179,.75);flex-shrink:0"><rect x="2" y="4" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="2" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="0.9"/><line x1="5" y1="11.5" x2="10" y2="11.5" stroke="currentColor" stroke-width="0.9"/><circle cx="13" cy="11.5" r="1" fill="currentColor"/></svg>
     <span class="module-title">LIVE INTELLIGENCE TERMINAL</span>
-    <!-- Feed tabs -->
-    <div style="display:flex;gap:1px;margin-right:8px;margin-left:8px" id="feed-tab-btns">
-      <button onclick="switchFeedTab('all')" id="ftb-all" style="font-family:var(--mono);font-size:11px;padding:3px 10px;border:1px solid rgba(0,229,255,.3);background:rgba(0,229,255,.1);color:rgba(0,229,255,.9);border-radius:3px 0 0 3px;cursor:pointer">ALL</button>
-      <button onclick="switchFeedTab('breaking')" id="ftb-breaking" style="font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid rgba(244,63,94,.2);background:transparent;color:rgba(244,63,94,.5);border-left:none;cursor:pointer"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f43f5e;margin-right:5px;vertical-align:-1px"></span>BREAKING</button>
-      <button onclick="switchFeedTab('cyber')" id="ftb-cyber" style="font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid rgba(0,229,255,.2);background:transparent;color:rgba(0,229,255,.5);border-left:none;cursor:pointer">⚡ CYBER</button>
-      <button onclick="switchFeedTab('markets')" id="ftb-markets" style="font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid rgba(251,191,36,.2);background:transparent;color:rgba(251,191,36,.5);border-left:none;cursor:pointer">◈ MARKETS</button>
-      <button onclick="switchFeedTab('infra')" id="ftb-infra" style="font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid rgba(0,144,212,.2);background:transparent;color:rgba(0,144,212,.5);border-left:none;border-radius:0 3px 3px 0;cursor:pointer">&#9741; INFRA</button>
-    </div>
+
     <div style="font-family:var(--mono);font-size:11px;color:rgba(0,255,179,.6);display:flex;align-items:center;gap:4px;margin-right:6px">
       <div style="width:6px;height:6px;border-radius:50%;background:#00ffb3;animation:pulse 2s infinite"></div>STREAMING
     </div>
@@ -1546,44 +1468,36 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--ui)
     <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
     <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="color:rgba(106,143,255,.75);flex-shrink:0"><line x1="2" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="9" r="2" fill="currentColor"/><circle cx="9" cy="9" r="2" fill="currentColor"/><circle cx="13" cy="9" r="2" fill="currentColor"/><line x1="5" y1="5.5" x2="5" y2="9" stroke="currentColor" stroke-width="1"/><line x1="13" y1="12.5" x2="13" y2="9" stroke="currentColor" stroke-width="1"/></svg>
     <span class="module-title">INTELLIGENCE TIMELINE</span>
-    <div style="display:flex;gap:6px;margin-right:8px;align-items:center">
-      <button onclick="timelinePlayback()" id="tl-play" style="font-family:var(--mono);font-size:11px;padding:4px 12px;border:1px solid rgba(0,229,255,.25);background:rgba(0,229,255,.06);color:rgba(0,229,255,.7);border-radius:4px;cursor:pointer;transition:all .15s">▶ REPLAY</button>
-      <select id="tl-range" onchange="updateTimelineRange(this.value)" style="font-family:var(--mono);font-size:11px;background:rgba(2,14,30,.95);border:1px solid rgba(0,229,255,.18);color:rgba(0,229,255,.65);padding:4px 8px;border-radius:4px;cursor:pointer">
-        <option value="24h">Last 24H</option>
-        <option value="7d" selected>Last 7 Days</option>
-        <option value="30d">Last 30 Days</option>
-        <option value="90d">Last 90 Days</option>
-      </select>
-
+    <!-- Category filter tabs -->
+    <div style="display:flex;gap:3px;margin-left:10px;margin-right:auto" id="tl-tabs">
+      <button class="tl-tab" id="tlt-all" onclick="tlSetTab('all')" style="color:rgba(0,229,255,.9);border-color:rgba(0,229,255,.35);background:rgba(0,229,255,.1)">ALL</button>
+      <button class="tl-tab" id="tlt-conflict" onclick="tlSetTab('conflict')" style="color:rgba(251,146,60,.6);border-color:rgba(251,146,60,.18)">CONFLICT</button>
+      <button class="tl-tab" id="tlt-cyber" onclick="tlSetTab('cyber')" style="color:rgba(0,229,255,.6);border-color:rgba(0,229,255,.18)">CYBER</button>
+      <button class="tl-tab" id="tlt-news" onclick="tlSetTab('news')" style="color:rgba(0,255,179,.6);border-color:rgba(0,255,179,.18)">NEWS</button>
     </div>
-    <button class="btn-maximise" onclick="toggleMaximise('timeline-panel')" title="Maximise / restore">⤢</button><button class="module-close" onclick="dockToggle('timeline')">✕</button>
+    <select id="tl-range" onchange="updateTimelineRange(this.value)" style="font-family:var(--mono);font-size:11px;background:rgba(2,14,30,.95);border:1px solid rgba(0,229,255,.18);color:rgba(0,229,255,.65);padding:4px 8px;border-radius:4px;cursor:pointer;margin-right:6px">
+      <option value="24h">Last 24H</option>
+      <option value="7d" selected>Last 7 Days</option>
+      <option value="30d">Last 30 Days</option>
+      <option value="90d">Last 90 Days</option>
+    </select>
+    <button class="btn-maximise" onclick="toggleMaximise('timeline-panel')" title="Maximise / restore">⤢</button>
+    <button class="module-close" onclick="dockToggle('timeline')">✕</button>
   </div>
-  <!-- Zoom controls bar -->
-  <div style="flex-shrink:0;padding:5px 12px;border-bottom:1px solid rgba(0,229,255,.06);display:flex;align-items:center;gap:8px;background:rgba(2,5,14,.7)">
-    <span style="font-family:var(--mono);font-size:10px;color:rgba(0,229,255,.45);letter-spacing:.5px">ZOOM:</span>
-    <button onclick="tlZoom(0.5)" title="Zoom in" style="font-family:var(--mono);font-size:12px;width:26px;height:26px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
-    <button onclick="tlZoom(2)" title="Zoom out" style="font-family:var(--mono);font-size:12px;width:26px;height:26px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
-    <button onclick="tlFitAll()" title="Fit all events" style="font-family:var(--mono);font-size:10px;padding:3px 9px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.7);border-radius:4px;cursor:pointer">FIT ALL</button>
-    <div style="flex:1"></div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:rgba(251,146,60,.7)"><div style="width:12px;height:3px;background:#fb923c;border-radius:1px"></div>CONFLICT</div>
-      <div style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:rgba(0,229,255,.7)"><div style="width:12px;height:3px;background:#00e5ff;border-radius:1px"></div>CYBER</div>
-      <div style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:rgba(0,255,179,.7)"><div style="width:12px;height:3px;background:#00ffb3;border-radius:1px"></div>NEWS</div>
-    </div>
-  </div>
-  <div class="module-body" style="flex:1;min-height:0;overflow:hidden;flex-direction:column;position:relative">
-    <div id="tl-container" style="flex:1;width:100%;height:100%;min-height:180px;position:relative;overflow:hidden">
-      <svg id="tl-svg" width="100%" height="100%" style="position:absolute;inset:0"></svg>
-    </div>
-    <!-- Detail strip — click any event to expand -->
-    <div id="tl-detail-strip" style="display:none;flex-shrink:0;padding:10px 14px;border-top:2px solid rgba(0,229,255,.2);background:rgba(1,4,14,.98);font-family:var(--mono)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div id="tl-det-dot" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
-        <div id="tl-det-title" style="color:#fff;font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.3px"></div>
-        <span id="tl-det-badge"></span>
-        <button onclick="document.getElementById('tl-detail-strip').style.display='none'" style="background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.18);color:rgba(0,229,255,.6);width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:11px;flex-shrink:0">✕</button>
+  <!-- Body: scrollable feed + detail panel -->
+  <div class="module-body" style="flex:1;min-height:0;flex-direction:column;overflow:hidden">
+    <div id="tl-feed"></div>
+    <!-- Detail panel — slides in below feed -->
+    <div id="tl-detail">
+      <div id="tl-detail-inner">
+        <div class="tl-detail-row">
+          <div id="tl-det-dot" style="width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px"></div>
+          <div class="tl-detail-title" id="tl-det-title"></div>
+          <div id="tl-det-badges" style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start"></div>
+          <button onclick="tlCloseDetail()" style="background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.18);color:rgba(0,229,255,.6);width:20px;height:20px;border-radius:4px;cursor:pointer;font-size:10px;flex-shrink:0;line-height:1">✕</button>
+        </div>
+        <div class="tl-detail-meta" id="tl-det-meta"></div>
       </div>
-      <div id="tl-det-meta" style="color:rgba(160,185,220,.7);font-size:11px;line-height:1.7"></div>
     </div>
   </div>
 </div>
@@ -4729,7 +4643,7 @@ function renderNav(){
       <div style="width:5px;height:5px;border-radius:50%;background:#00ffb3;animation:pulse 2s infinite;box-shadow:0 0 5px #00ffb3"></div>
       <span id="utc-nav" style="color:rgba(0,229,255,.80);font-size:${isMob?'10':'11'}px;font-family:var(--mono)"></span>
     </div>
-    ${isMob?'':`<button onclick="quietMode=!quietMode;renderBanner()" title="Toggle alerts" style="background:transparent;border:1px solid rgba(0,229,255,.1);color:rgba(148,163,184,.85);width:30px;height:30px;border-radius:5px;font-size:16px;cursor:pointer;margin-left:6px"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5C5 2 3.5 4 3.5 7v3h7V7C10.5 4 9 2 7 1.5z" stroke="currentColor" stroke-width="1.1" fill="none"/><line x1="5.5" y1="10" x2="8.5" y2="10" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 10v1.5C5.5 12.3 6.2 13 7 13s1.5-.7 1.5-1.5V10" stroke="currentColor" stroke-width="1.1" fill="none"/></svg></button>`}`;
+    `;
 }
 
 function renderTabs(){
@@ -9540,107 +9454,180 @@ function buildCritCards() {
 
 // ── MAIN RENDER ──
 function renderThreatBoard() {
-  // Respect active filter
-  const filterFn = tbFilter === 'critical'
-    ? x => (x.sev||'').toUpperCase() === 'CRITICAL'
-    : tbFilter === 'high'
-    ? x => ['CRITICAL','HIGH'].includes((x.sev||'').toUpperCase())
-    : () => true;
+  const feed = document.getElementById('tb-feed');
+  if (!feed) return;
 
-  // ── Priority strip ──
+  const sevOrder = {CRITICAL:0, HIGH:1, MEDIUM:2, LOW:3};
+
+  // ── SECTION HEADER helper ──
+  const sectionHdr = (icon, title, col, countStr) =>
+    `<div class="tb-section-hdr">
+      ${icon}
+      <span class="tb-section-hdr-title" style="color:${col}">${title}</span>
+      <span class="tb-section-ct" style="background:${col}18;color:${col};border:1px solid ${col}30">${countStr}</span>
+    </div>`;
+
+  let html = '';
+
+  // ── 1. PRIORITY SIGNALS (CRITICAL across all domains) ──
   const critCards = buildCritCards();
-  const filteredCrit = tbFilter === 'all' ? critCards : critCards.filter(c => tbFilter === 'critical' ? c.det?.sev === 'CRITICAL' : true);
-  const critScroll = document.getElementById('tb-crit-scroll');
-  const critCount = document.getElementById('tb-crit-count');
-  if (critScroll) {
-    if (filteredCrit.length === 0) {
-      critScroll.innerHTML = `<div style="padding:6px 10px 8px;font-size:11px;color:rgba(0,229,255,.3);font-family:var(--mono)">No priority signals active</div>`;
-    } else {
-      critScroll.innerHTML = filteredCrit.map(c => {
-        const detData = encodeURIComponent(JSON.stringify(c.det));
-        return `<div class="tb-crit-card" onclick="openTbDetail('${detData}')">
-          <div class="tb-crit-sector" style="color:${c.sectorCol}">
-            <div style="width:5px;height:5px;border-radius:50%;background:#f43f5e;animation:pulseRed 1s infinite"></div>
-            ${c.sector}
-          </div>
-          <div class="tb-crit-title">${c.title}</div>
-          <div class="tb-crit-summary">${c.summary}</div>
-          <div class="tb-crit-meta">${c.age}</div>
-        </div>`;
-      }).join('');
-    }
-    if (critCount) critCount.textContent = filteredCrit.length > 0 ? '· ' + filteredCrit.length + ' active' : '';
+  if (critCards.length > 0) {
+    html += sectionHdr(
+      `<div style="width:7px;height:7px;border-radius:50%;background:#f43f5e;animation:pulseRed .8s infinite;flex-shrink:0"></div>`,
+      'PRIORITY SIGNALS', '#f43f5e', critCards.length + ' ACTIVE'
+    );
+    html += critCards.map(c => {
+      const detData = encodeURIComponent(JSON.stringify(c.det));
+      return `<div class="tb-card" onclick="openTbDetail('${detData}')" style="border-left-color:#f43f5e;background:rgba(244,63,94,.06)">
+        <div class="tb-card-dot" style="background:#f43f5e;box-shadow:0 0 6px #f43f5e80"></div>
+        <div class="tb-card-body">
+          <div class="tb-card-title">${c.title}</div>
+          <div class="tb-card-sub">${c.sector} · ${c.age}</div>
+          <div class="tb-card-desc">${c.summary}</div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  // ── Theatre list ──
+  // ── 2. CONFLICT THEATRES ──
   const theatres = buildTheatres();
-  const theatreList = document.getElementById('tb-theatre-list');
-  const theatreCt = document.getElementById('tb-theatre-ct');
-  if (theatreList) {
-    const filteredTheatres = theatres.map(t => ({
-      ...t,
-      events: t.events.filter(filterFn)
-    })).filter(t => t.events.length > 0);
+  const totalEvents = theatres.reduce((n, t) => n + t.events.length, 0);
+  html += sectionHdr(
+    `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><line x1="1" y1="6" x2="11" y2="6" stroke="#fb923c" stroke-width="1.3"/><line x1="3" y1="1" x2="3" y2="11" stroke="#fb923c" stroke-width="1.3"/><line x1="9" y1="1" x2="9" y2="11" stroke="#fb923c" stroke-width="1.3"/></svg>`,
+    'ACTIVE CONFLICT THEATRES', '#fb923c', theatres.length + ' theatres · ' + totalEvents + ' events'
+  );
+  theatres.forEach(t => {
+    const worstCol = tbSevCol(t.worst);
+    const badgeLabel = t.critCount > 0 ? t.critCount + ' CRIT' : t.highCount > 0 ? t.highCount + ' HIGH' : t.events.length + ' ACT';
+    // Top event for preview
+    const top = t.events[0];
+    const topSevCol = tbSevCol(top.sev);
+    const actors = top.actors && top.actors !== '—' ? top.actors : '';
+    const desc = top.detail || top.desc || (top.type || 'Armed Conflict');
+    const detData = encodeURIComponent(JSON.stringify({
+      title: top.region + (top.type ? ' — ' + top.type : ''),
+      subtitle: 'GEOPOLITICAL / CONFLICT', sev: top.sev, col: '#fb923c',
+      tags: [{label:top.sev||'MEDIUM',col:topSevCol},{label:top.src||'GDELT',col:'rgba(200,220,255,.5)'},{label:'Conf: '+(top.conf||'—'),col:'rgba(200,220,255,.4)'}],
+      desc: desc + (actors ? ` Actors: ${actors}.` : '')
+    }));
+    html += `<div class="tb-card" onclick="openTbDetail('${detData}')" style="border-left-color:${worstCol}80">
+      <div class="tb-card-dot" style="background:${worstCol};box-shadow:0 0 5px ${worstCol}80"></div>
+      <div class="tb-card-body">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
+          <span style="font-size:13px;font-weight:700;color:rgba(235,245,255,.92)">${t.name}</span>
+          <span class="tb-pill" style="font-size:9px;background:${worstCol}18;color:${worstCol};border:1px solid ${worstCol}35">${badgeLabel}</span>
+          ${t.events.length > 1 ? `<span style="font-size:9.5px;color:rgba(0,229,255,.3);margin-left:auto">${t.events.length} events</span>` : ''}
+        </div>
+        <div class="tb-card-sub">${top.type || 'Armed Conflict'}${actors ? ' · ' + actors : ''}</div>
+        <div class="tb-card-desc">${desc.slice(0, 120)}${desc.length > 120 ? '…' : ''}</div>
+        <div class="tb-card-footer">
+          ${pill(top.sev||'MEDIUM', topSevCol)}
+          ${top.src ? pill(top.src, 'rgba(200,220,255,.4)') : ''}
+          ${top.conf ? pill('Conf: '+top.conf, 'rgba(200,220,255,.3)') : ''}
+        </div>
+      </div>
+      <span class="tb-card-age">${tbAgeStr(top.age)}</span>
+    </div>`;
+  });
 
-    theatreList.innerHTML = filteredTheatres.length
-      ? filteredTheatres.map(theatreHTML).join('')
-      : `<div style="padding:24px 12px;text-align:center;font-size:11px;color:rgba(200,220,255,.25);font-family:var(--mono)">No conflict events match filter</div>`;
+  // ── 3. CYBER VULNERABILITIES ──
+  const cyberSorted = CYBER.map(c => ({...c, sev: c.cvss>=9?'CRITICAL':c.cvss>=7?'HIGH':'MEDIUM'}))
+    .sort((a,b) => b.cvss - a.cvss);
+  const cyberCritCt = cyberSorted.filter(c=>c.sev==='CRITICAL').length;
+  html += sectionHdr(
+    `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1L8 5H11L8.5 7.5L9.5 11L6 9L2.5 11L3.5 7.5L1 5H4L6 1Z" stroke="#00e5ff" stroke-width="1" fill="rgba(0,229,255,.12)"/></svg>`,
+    'CYBER VULNERABILITIES', '#00e5ff',
+    cyberCritCt > 0 ? cyberCritCt + ' CRITICAL' : cyberSorted.length + ' TRACKED'
+  );
+  html += cyberSorted.map(c => {
+    const sevCol = tbSevCol(c.sev);
+    const scoreCol = c.cvss>=9?'#f43f5e':c.cvss>=7?'#fb923c':'#fbbf24';
+    const detData = encodeURIComponent(JSON.stringify({
+      title: c.cve || 'Unknown CVE', subtitle: 'CYBER THREAT', sev: c.sev, col: '#00e5ff',
+      tags:[{label:'CVSS '+c.cvss,col:sevCol},{label:c.status||'—',col:'rgba(200,220,255,.5)'},...(c.kev?[{label:'ACTIVELY EXPLOITED',col:'#f43f5e'}]:[])],
+      desc: `Vulnerability in ${c.sys}. CVSS score: ${c.cvss}/10. Status: ${c.status}.${c.kev?' Confirmed active exploitation in the wild.':''}`
+    }));
+    return `<div class="tb-card" onclick="openTbDetail('${detData}')" style="border-left-color:${sevCol}">
+      <div style="font-size:13px;font-weight:900;padding:3px 7px;border-radius:4px;background:${scoreCol}20;color:${scoreCol};flex-shrink:0;min-width:30px;text-align:center;line-height:1.4;margin-top:1px">${c.cvss}</div>
+      <div class="tb-card-body">
+        <div class="tb-card-title">${c.cve||'Unknown'}</div>
+        <div class="tb-card-sub">${c.sys||'—'}</div>
+        <div class="tb-card-footer">
+          ${c.kev ? pill('EXPLOITED','#f43f5e') : ''}
+          ${pill(c.status||'—','rgba(200,220,255,.4)')}
+        </div>
+      </div>
+      <span class="tb-card-age">${tbAgeStr(c.age)}</span>
+    </div>`;
+  }).join('');
 
-    if (theatreCt) theatreCt.textContent = filteredTheatres.length + ' theatres · ' + filteredTheatres.reduce((n,t)=>n+t.events.length,0) + ' events';
+  // ── 4. MARKET INDICATORS ──
+  const mktSorted = [...MARKETS].sort((a,b) => {
+    const aa = a.alert?1:0, ba = b.alert?1:0;
+    return ba-aa || Math.abs(parseFloat(b.chg||0))-Math.abs(parseFloat(a.chg||0));
+  });
+  const mktAlerts = mktSorted.filter(m=>m.alert).length;
+  html += sectionHdr(
+    `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="1,9 4,5 7,7 11,2" stroke="#fbbf24" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>`,
+    'MARKET INDICATORS', '#fbbf24',
+    mktAlerts > 0 ? mktAlerts + ' ALERTS' : mktSorted.length + ' TRACKED'
+  );
+  // Market tiles grid
+  html += `<div class="tb-mkt-strip">`;
+  html += mktSorted.map(m => {
+    const chg = parseFloat(m.chg||0);
+    const up = m.up !== false && chg >= 0;
+    const priceCol = m.alert ? '#fbbf24' : up ? '#00ffb3' : '#f43f5e';
+    const chgCol = up ? '#00ffb3' : '#f43f5e';
+    const detData = encodeURIComponent(JSON.stringify({
+      title: m.asset||m.id, subtitle: 'MARKET INDICATOR', sev: m.alert?'HIGH':'Low', col:'#fbbf24',
+      tags:[{label:(up?'▲ ':'▼ ')+(m.chg||'0')+'%',col:chgCol},{label:String(m.price||'—')+' '+(m.unit||''),col:'rgba(251,191,36,.8)'},...(m.alert?[{label:'ALERT',col:'#fbbf24'}]:[])],
+      desc:`${m.asset}: ${up?'Up':'Down'} ${m.chg}% to ${m.price} ${m.unit}. ${m.driver||'Market movement flagged.'}`
+    }));
+    return `<div class="tb-mkt-tile" onclick="openTbDetail('${detData}')">
+      <div class="tb-mkt-tile-name">${m.asset||m.id}</div>
+      <div class="tb-mkt-tile-price" style="color:${priceCol}">${m.price||'—'}</div>
+      <div class="tb-mkt-tile-chg" style="color:${chgCol}">${up?'▲':'▼'} ${m.chg||'0'}%</div>
+      <div class="tb-mkt-tile-unit">${m.unit||''}</div>
+      ${m.alert?`<div style="margin-top:4px"><span class="tb-pill" style="font-size:9px;background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.28)">⚠ ALERT</span></div>`:''}
+    </div>`;
+  }).join('');
+  html += `</div>`;
+
+  // ── 5. ENV / CBRN ──
+  const envEvents = [];
+  CONFLICTS.filter(c=>/(nuclear|chemical|radiolog|biolog|cbrn|environ|climate)/i.test((c.detail||'')+(c.type||'')))
+    .forEach(c => envEvents.push({title:c.region, subtitle:'CBRN / Environmental', sev:c.sev, desc:c.detail||'Environmental event.', src:c.src}));
+  if (typeof wildfires !== 'undefined') {
+    wildfires.slice(0,4).forEach(f => envEvents.push({title:f.name||'Active Wildfire', subtitle:(f.country||'—')+' · NASA FIRMS', sev:'HIGH', desc:'Active wildfire detected via NASA FIRMS satellite.', src:'NASA FIRMS'}));
+  }
+  html += sectionHdr(
+    `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#00ffb3" stroke-width="1.1"/><path d="M6 4 C8 4 9 6 6 8 C3 6 4 4 6 4Z" fill="rgba(0,255,179,.25)" stroke="#00ffb3" stroke-width="0.8"/></svg>`,
+    'ENV / CBRN', '#00ffb3',
+    envEvents.length > 0 ? envEvents.length + ' ACTIVE' : 'ALL CLEAR'
+  );
+  if (envEvents.length === 0) {
+    html += `<div style="padding:14px 12px;font-size:11px;color:rgba(0,255,179,.28);font-family:var(--mono);text-align:center">All clear — monitoring active</div>`;
+  } else {
+    html += envEvents.map(e => {
+      const sevCol = tbSevCol(e.sev);
+      const detData = encodeURIComponent(JSON.stringify({
+        title:e.title, subtitle:'ENVIRONMENTAL / CBRN', sev:e.sev, col:'#00ffb3',
+        tags:[{label:e.sev||'MEDIUM',col:sevCol},{label:'CBRN',col:'#00ffb3'}],
+        desc:e.desc||'Environmental / CBRN event detected.'
+      }));
+      return `<div class="tb-card" onclick="openTbDetail('${detData}')" style="border-left-color:${sevCol}">
+        <div class="tb-card-dot" style="background:#00ffb3;box-shadow:0 0 5px rgba(0,255,179,.5)"></div>
+        <div class="tb-card-body">
+          <div class="tb-card-title">${e.title||'—'}</div>
+          <div class="tb-card-sub">${e.subtitle||''}</div>
+          <div class="tb-card-footer">${pill(e.sev||'MEDIUM',sevCol)}${e.src?pill(e.src,'rgba(200,220,255,.4)'):''}</div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  // ── Cyber list ──
-  const cyberList = document.getElementById('tb-cyber-list');
-  const cyberCt = document.getElementById('tb-cyber-ct');
-  if (cyberList) {
-    const items = [...CYBER].filter(filterFn.bind(null) || (() => true));
-    // For cyber, filterFn works on sev property reconstructed
-    const cyberFiltered = CYBER.map(c => ({...c, sev: c.cvss>=9?'CRITICAL':c.cvss>=7?'HIGH':'MEDIUM'}))
-      .filter(filterFn)
-      .sort((a,b) => b.cvss - a.cvss);
-
-    cyberList.innerHTML = cyberFiltered.length
-      ? cyberFiltered.map(cyberRowHTML).join('')
-      : `<div style="padding:24px 12px;text-align:center;font-size:11px;color:rgba(200,220,255,.25);font-family:var(--mono)">No CVEs match filter</div>`;
-
-    const critCt = cyberFiltered.filter(c=>c.sev==='CRITICAL').length;
-    const highCt = cyberFiltered.filter(c=>c.sev==='HIGH').length;
-    if (cyberCt) cyberCt.textContent = critCt > 0 ? critCt + ' CRIT' : highCt > 0 ? highCt + ' HIGH' : cyberFiltered.length + ' MON';
-  }
-
-  // ── Markets grid ──
-  const mktGrid = document.getElementById('tb-mkt-grid');
-  const mktCt = document.getElementById('tb-mkt-ct');
-  if (mktGrid) {
-    const alerts = MARKETS.filter(m => m.alert);
-    const sorted = [...MARKETS].sort((a,b) => {
-      const aa = a.alert ? 1 : 0, ba = b.alert ? 1 : 0;
-      const ac = Math.abs(parseFloat(a.chg||0)), bc = Math.abs(parseFloat(b.chg||0));
-      return ba - aa || bc - ac;
-    });
-    mktGrid.innerHTML = sorted.map(mktCellHTML).join('');
-    if (mktCt) mktCt.textContent = alerts.length > 0 ? alerts.length + ' ALERTS' : sorted.length + ' TRACKED';
-  }
-
-  // ── Env / CBRN ──
-  const envList = document.getElementById('tb-env-list');
-  const envCt = document.getElementById('tb-env-ct');
-  if (envList) {
-    const envEvents = [];
-    CONFLICTS.filter(c => /(nuclear|chemical|radiolog|biolog|cbrn|environ|climate)/i.test((c.detail||'')+(c.type||'')))
-      .forEach(c => envEvents.push({title:c.region, subtitle:'CBRN / Environmental', sev:c.sev, desc:c.detail||'Environmental event.', src:c.src}));
-    if (typeof wildfires !== 'undefined') {
-      wildfires.slice(0,4).forEach(f => envEvents.push({title:f.name||'Active Wildfire', subtitle:(f.country||'—')+' · NASA FIRMS', sev:'HIGH', desc:'Active wildfire detected via NASA FIRMS satellite.', src:'NASA FIRMS'}));
-    }
-
-    if (envEvents.length === 0) {
-      envList.innerHTML = `<div style="padding:20px 10px;text-align:center;font-size:11px;color:rgba(0,255,179,.25);font-family:var(--mono)">All clear — monitoring active</div>`;
-    } else {
-      const filtered = envEvents.filter(filterFn);
-      envList.innerHTML = filtered.length ? filtered.map(envRowHTML).join('') : `<div style="padding:16px 10px;text-align:center;font-size:11px;color:rgba(200,220,255,.25)">No events match filter</div>`;
-    }
-    if (envCt) envCt.textContent = envEvents.length > 0 ? envEvents.length + ' ACT' : 'CLEAR';
-  }
+  feed.innerHTML = html;
 
   // ── Header count ──
   const tc = document.getElementById('radar-threat-count');
@@ -9835,320 +9822,268 @@ function refreshFeedTerminal() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// MODULE 5: INTELLIGENCE TIMELINE — pure SVG, no vis.js
+// MODULE 5: INTELLIGENCE TIMELINE — feed-based, fully reliable
 // ═══════════════════════════════════════════════════════════
-let tlInstance = null; // kept for compat, unused
-let _tlRange = 7 * 86400000; // default 7 days in ms
-let _tlOffsetMs = 0;         // pan offset
-let _tlZoomFactor = 1;       // zoom (1 = default)
-let _tlDragging = false;
-let _tlDragStartX = 0;
-let _tlDragStartOffset = 0;
-let _tlPlayInterval = null;
-let _tlPlaying = false;
+let _tlRangeMs = 7 * 86400000;
+let _tlTab     = 'all'; // all | conflict | cyber | news
+let _tlSelId   = null;
 
+// ── Build sorted event list ──
 function getTlItems() {
   const items = [];
-  const now = Date.now();
+  const now   = Date.now();
+
   CONFLICTS.forEach((c, i) => {
     const ageH = c.age || ((i % 90) * 24 + (i * 7) % 24);
-    const t = now - ageH * 3600000;
-    const rgb = c.sev==='Critical'?'244,63,94':c.sev==='High'?'251,146,60':'251,191,36';
-    const hex = c.sev==='Critical'?'#f43f5e':c.sev==='High'?'#fb923c':'#fbbf24';
-    const ds = new Date(t).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-    items.push({ id:'c_'+c.id, t, group:0,
-      label: (c.region||c.country||'Unknown').split('/')[0].trim().slice(0,20),
-      rgb, hex,
-      detail: [c.region, c.sev, c.type||'Conflict', ds, c.detail||''].filter(Boolean).join(' · '),
-      sev: c.sev || 'Medium'
+    items.push({
+      id:    'c_' + (c.id || i),
+      t:     now - ageH * 3600000,
+      tab:   'conflict',
+      hex:   c.sev === 'Critical' ? '#f43f5e' : c.sev === 'High' ? '#fb923c' : '#fbbf24',
+      rgb:   c.sev === 'Critical' ? '244,63,94' : c.sev === 'High' ? '251,146,60' : '251,191,36',
+      cat:   'CONFLICT',
+      sev:   c.sev || 'Medium',
+      title: c.region || 'Unknown Region',
+      sub:   c.type   || 'Armed Conflict',
+      desc:  c.detail || '',
+      tags:  [c.sev || 'Medium', c.src || 'GDELT', c.conf ? 'Conf: ' + c.conf : ''].filter(Boolean),
+      actors: c.actors && c.actors !== '—' ? c.actors : ''
     });
   });
+
   CYBER.forEach((c, i) => {
     const ageH = c.age || ((i % 60) * 24 + (i * 11) % 24);
-    const t = now - ageH * 3600000;
-    const rgb = c.cvss>=9?'244,63,94':c.cvss>=7?'251,146,60':'0,229,255';
-    const hex = c.cvss>=9?'#f43f5e':c.cvss>=7?'#fb923c':'#00e5ff';
-    const sev = c.cvss>=9?'Critical':c.cvss>=7?'High':'Medium';
-    const ds = new Date(t).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-    items.push({ id:'y_'+c.id, t, group:1,
-      label: c.cve || 'CVE-Unknown',
-      rgb, hex,
-      detail: [c.cve, 'CVSS '+c.cvss, c.sys||'Unknown System', ds, c.kev?'⚠ ACTIVELY EXPLOITED':''].filter(Boolean).join(' · '),
-      sev
+    const sev  = c.cvss >= 9 ? 'Critical' : c.cvss >= 7 ? 'High' : 'Medium';
+    items.push({
+      id:    'y_' + (c.id || i),
+      t:     now - ageH * 3600000,
+      tab:   'cyber',
+      hex:   c.cvss >= 9 ? '#f43f5e' : c.cvss >= 7 ? '#fb923c' : '#00e5ff',
+      rgb:   c.cvss >= 9 ? '244,63,94' : c.cvss >= 7 ? '251,146,60' : '0,229,255',
+      cat:   'CYBER',
+      sev,
+      title: c.cve  || 'Unknown CVE',
+      sub:   c.sys  || 'Unknown System',
+      desc:  c.kev  ? '⚠ Actively exploited in the wild.' : ('CVSS ' + c.cvss + '/10 · ' + (c.status || '')),
+      tags:  ['CVSS ' + c.cvss, sev, c.kev ? 'EXPLOITED' : '', c.status || ''].filter(Boolean)
     });
   });
-  NEWS.slice(0, 30).forEach((n, i) => {
-    const t = now - (n.age||i*45) * 60000;
-    const ds = new Date(t).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    items.push({ id:'n_'+n.id, t, group:2,
-      label: (n.src||'NEWS').slice(0, 14),
-      rgb:'0,255,179', hex:'#00ffb3',
-      detail: [n.hl||n.src, n.src, ds].filter(Boolean).join(' · '),
-      sev: 'Info'
+
+  (typeof NEWS !== 'undefined' ? NEWS : []).slice(0, 40).forEach((n, i) => {
+    items.push({
+      id:    'n_' + (n.id || i),
+      t:     now - (n.age || i * 45) * 60000,
+      tab:   'news',
+      hex:   '#00ffb3',
+      rgb:   '0,255,179',
+      cat:   'NEWS',
+      sev:   'Info',
+      title: n.hl   || n.src || 'News Item',
+      sub:   n.src  || '',
+      desc:  '',
+      tags:  [n.src || '', n.breaking ? 'BREAKING' : ''].filter(Boolean)
     });
   });
-  return items;
+
+  return items.sort((a, b) => b.t - a.t); // newest first
 }
 
-const TL_GROUPS = [
-  { label:'CONFLICT', hex:'#fb923c' },
-  { label:'CYBER',    hex:'#00e5ff' },
-  { label:'NEWS',     hex:'#00ffb3' },
-];
-const TL_LEFT   = 76;
-const TL_ROW_H  = 64;
-const TL_HDR_H  = 34;
-const TL_PAD    = 4;
-
+// ── Render the feed ──
 function renderTimeline() {
-  const svg = document.getElementById('tl-svg');
-  if (!svg) return;
-  const W = svg.clientWidth || svg.getBoundingClientRect().width || 900;
-  const H = svg.clientHeight || svg.getBoundingClientRect().height || 180;
-  if (W < 10 || H < 10) { setTimeout(renderTimeline, 200); return; }
+  const feed = document.getElementById('tl-feed');
+  if (!feed) return;
 
-  const items   = getTlItems();
-  const now     = Date.now();
-  const visMs   = (_tlRange / _tlZoomFactor);
-  const endMs   = now + 2 * 3600000 - _tlOffsetMs;
-  const startMs = endMs - visMs;
-  const cW      = W - TL_LEFT;  // content width
-
-  function xOf(t) { return TL_LEFT + ((t - startMs) / visMs) * cW; }
-
-  // Bucket items by group
-  const byGroup = [[], [], []];
-  items.forEach(it => { if (it.group >= 0 && it.group <= 2) byGroup[it.group].push(it); });
-
-  let out = `<svg id="tl-svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
-    style="position:absolute;inset:0;cursor:grab;user-select:none;-webkit-user-select:none"
-    onmousedown="tlMouseDown(event)" onmousemove="tlMouseMove(event)" onmouseup="tlMouseUp(event)"
-    onmouseleave="tlMouseUp(event)" onwheel="tlWheel(event)">`;
-
-  // Background
-  out += `<rect width="${W}" height="${H}" fill="rgba(1,8,20,0.0)"/>`;
-
-  // Group row backgrounds
-  TL_GROUPS.forEach((g,i) => {
-    const y = TL_HDR_H + TL_PAD + i * TL_ROW_H;
-    out += `<rect x="0" y="${y}" width="${W}" height="${TL_ROW_H}" fill="${i%2===0?'rgba(0,229,255,.015)':'rgba(0,0,0,0)'}"/>`;
-    // Group label
-    out += `<text x="4" y="${y + TL_ROW_H/2 + 4}" font-family="monospace" font-size="11" font-weight="800" fill="${g.hex}" letter-spacing="1">${g.label}</text>`;
-    // Row border
-    out += `<line x1="0" y1="${y+TL_ROW_H}" x2="${W}" y2="${y+TL_ROW_H}" stroke="rgba(0,229,255,.06)" stroke-width="1"/>`;
+  const now    = Date.now();
+  const cutoff = now - _tlRangeMs;
+  const items  = getTlItems().filter(it => {
+    if (it.t < cutoff) return false;
+    if (_tlTab !== 'all' && it.tab !== _tlTab) return false;
+    return true;
   });
 
-  // Left label column separator
-  out += `<line x1="${TL_LEFT}" y1="${TL_HDR_H}" x2="${TL_LEFT}" y2="${H}" stroke="rgba(0,229,255,.12)" stroke-width="1"/>`;
-
-  const tickLabels = [];
-  const tickCount = Math.min(10, Math.floor(cW / 90));
-  const tickStepMs = visMs / tickCount;
-  for (let i = 0; i <= tickCount; i++) {
-    const t = startMs + i * tickStepMs;
-    const x = xOf(t);
-    if (x < TL_LEFT || x > W) continue;
-    const d = new Date(t);
-    const isDay = tickStepMs >= 86400000;
-    const label = isDay
-      ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})
-      : d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+(visMs<86400000?'':' '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
-    out += `<line x1="${x}" y1="${TL_HDR_H}" x2="${x}" y2="${H}" stroke="rgba(0,229,255,.07)" stroke-width="1"/>`;
-    tickLabels.push({ x, label });
-  }
-
-  const nowX = xOf(now);
-
-  // Axis header bar — drawn over grid lines
-  out += `<rect x="0" y="0" width="${W}" height="${TL_HDR_H}" fill="rgba(1,8,24,.92)"/>`;
-  out += `<line x1="0" y1="${TL_HDR_H}" x2="${W}" y2="${TL_HDR_H}" stroke="rgba(0,229,255,.2)" stroke-width="1"/>`;
-  // Tick labels rendered ON TOP of header
-  tickLabels.forEach(({ x, label }) => {
-    if (x < TL_LEFT + 2 || x > W - 2) return;
-    out += `<line x1="${x}" y1="${TL_HDR_H-5}" x2="${x}" y2="${TL_HDR_H}" stroke="rgba(0,229,255,.45)" stroke-width="1"/>`;
-    out += `<text x="${x}" y="${TL_HDR_H-8}" font-family="monospace" font-size="10" fill="rgba(0,229,255,.85)" text-anchor="middle" font-weight="600">${label}</text>`;
-  });
-
-  // Items — render each group row, stacking overlapping items vertically within the row
-  byGroup.forEach((grpItems, gi) => {
-    const rowY = TL_HDR_H + TL_PAD + gi * TL_ROW_H;
-    const rowMid = rowY + TL_ROW_H / 2;
-    // Sort by time
-    grpItems.sort((a,b) => a.t - b.t);
-    // Simple stack lanes: track rightmost x per lane
-    const laneRight = [];
-    grpItems.forEach(it => {
-      const x = xOf(it.t);
-      if (x < TL_LEFT - 4 || x > W + 4) return;
-      const textW = Math.min(it.label.length * 7 + 14, 160);
-      // Find lane with room
-      let lane = 0;
-      for (let l = 0; l < laneRight.length; l++) {
-        if (laneRight[l] < x - 4) { lane = l; break; }
-        lane = laneRight.length;
-      }
-      const laneH = 19;
-      const laneSpacing = 21;
-      const maxLanes = Math.floor((TL_ROW_H - 10) / laneSpacing);
-      if (lane >= maxLanes) lane = maxLanes - 1;
-      const iy = rowMid - (laneH / 2) + (lane - Math.floor(maxLanes/2)) * laneSpacing;
-      laneRight[lane] = x + textW + 3;
-      const safeId = it.id.replace(/'/g, '');
-      // Invisible oversized click target
-      out += `<rect x="${x-2}" y="${iy-3}" width="${textW+4}" height="${laneH+6}" rx="4" fill="transparent" style="cursor:pointer" onclick="tlSelectItem('${safeId}')"/>`;
-      // Pill
-      out += `<rect x="${x}" y="${iy}" width="${textW}" height="${laneH}" rx="3" fill="rgba(${it.rgb},.13)" stroke="rgba(${it.rgb},.65)" stroke-width="1" style="pointer-events:none"/>`;
-      // Left accent bar
-      out += `<rect x="${x}" y="${iy}" width="3" height="${laneH}" rx="1.5" fill="rgba(${it.rgb},.95)" style="pointer-events:none"/>`;
-      // Label
-      const maxChars = Math.max(4, Math.floor((textW - 14) / 6.5));
-      out += `<text x="${x+8}" y="${iy+13}" font-family="monospace" font-size="10.5" fill="${it.hex}" style="pointer-events:none" font-weight="700" letter-spacing="0.2">${it.label.slice(0, maxChars)}</text>`;
-    });
-  });
-
-  // NOW line — drawn last so always on top
-  if (nowX > TL_LEFT && nowX < W) {
-    out += `<line x1="${nowX}" y1="${TL_HDR_H}" x2="${nowX}" y2="${H}" stroke="rgba(0,229,255,.9)" stroke-width="2" stroke-dasharray="5,3"/>`;
-    out += `<rect x="${nowX-13}" y="${TL_HDR_H+2}" width="26" height="14" rx="3" fill="rgba(0,229,255,.18)" stroke="rgba(0,229,255,.5)" stroke-width="1"/>`;
-    out += `<text x="${nowX}" y="${TL_HDR_H+12}" font-family="monospace" font-size="8" fill="#00e5ff" text-anchor="middle" font-weight="700">NOW</text>`;
-  }
-
-  // Empty state
   if (items.length === 0) {
-    out += `<text x="${W/2}" y="${H/2-8}" text-anchor="middle" font-family="monospace" font-size="13" fill="rgba(0,229,255,.3)">⏳ Awaiting feed data</text>`;
-    out += `<text x="${W/2}" y="${H/2+10}" text-anchor="middle" font-family="monospace" font-size="11" fill="rgba(0,229,255,.2)">Timeline populates as GDELT, NVD &amp; news load</text>`;
+    feed.innerHTML = '<div style="padding:32px 16px;text-align:center;font-family:var(--mono);font-size:12px;color:rgba(0,229,255,.28)">No events in selected range · Try a longer window</div>';
+    return;
   }
 
-  out += `</svg>`;
+  // Group by day
+  const groups = {};
+  const dayKeys = [];
+  items.forEach(it => {
+    const d   = new Date(it.t);
+    const key = d.toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+    if (!groups[key]) { groups[key] = []; dayKeys.push(key); }
+    groups[key].push(it);
+  });
 
-  // Replace svg content safely
-  const container = document.getElementById('tl-container');
-  if (container) container.innerHTML = out;
+  const sevBg = { Critical:'rgba(244,63,94,.12)', High:'rgba(251,146,60,.1)', Medium:'rgba(251,191,36,.08)', Info:'rgba(0,255,179,.07)' };
+
+  let html = '';
+  dayKeys.forEach(day => {
+    const evts = groups[day];
+    // Is today?
+    const today = new Date().toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+    const dayLabel = day === today ? 'TODAY — ' + day : day;
+    html += `<div class="tl-day-group">
+      <div class="tl-day-hdr">
+        <span>${dayLabel}</span>
+        <div class="tl-day-hdr-line"></div>
+        <span style="color:rgba(0,229,255,.3)">${evts.length} event${evts.length !== 1 ? 's' : ''}</span>
+      </div>`;
+
+    evts.forEach((it, idx) => {
+      const d       = new Date(it.t);
+      const timeStr = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+      const isLast  = idx === evts.length - 1;
+      const isSel   = it.id === _tlSelId;
+      const tagsHtml = it.tags.map(t => {
+        const col = t === 'Critical' || t === 'EXPLOITED' || t === 'BREAKING' ? '#f43f5e'
+                  : t === 'High' ? '#fb923c'
+                  : t === 'Medium' ? '#fbbf24'
+                  : 'rgba(180,205,235,.45)';
+        return `<span class="tl-tag" style="background:${col}18;color:${col};border:1px solid ${col}35">${t}</span>`;
+      }).join('');
+
+      html += `<div class="tl-event${isSel ? ' selected' : ''}" onclick="tlSelectItem('${it.id}')" data-tlid="${it.id}">
+        <div class="tl-time-col">${timeStr}</div>
+        <div class="tl-dot-col">
+          <div class="tl-dot" style="background:${it.hex};box-shadow:0 0 5px ${it.hex}80"></div>
+          ${!isLast ? '<div class="tl-dot-line"></div>' : ''}
+        </div>
+        <div class="tl-event-body" style="border-left-color:${isSel ? it.hex : 'transparent'}">
+          <div class="tl-event-cat" style="color:${it.hex}">
+            <span style="background:rgba(${it.rgb},.12);border:1px solid rgba(${it.rgb},.28);padding:1px 5px;border-radius:3px;font-size:8.5px">${it.cat}</span>
+          </div>
+          <div class="tl-event-title">${it.title}</div>
+          ${it.sub ? `<div class="tl-event-sub">${it.sub}${it.actors ? ' · ' + it.actors : ''}</div>` : ''}
+          <div class="tl-event-tags">${tagsHtml}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  feed.innerHTML = html;
 }
 
+// ── Select / detail panel ──
 function tlSelectItem(id) {
   const items = getTlItems();
-  const it = items.find(i => i.id === id);
+  const it    = items.find(i => i.id === id);
   if (!it) return;
-  const strip   = document.getElementById('tl-detail-strip');
-  const dotEl   = document.getElementById('tl-det-dot');
-  const titleEl = document.getElementById('tl-det-title');
-  const metaEl  = document.getElementById('tl-det-meta');
-  const badgeEl = document.getElementById('tl-det-badge');
-  if (!strip) return;
-  if (dotEl) { dotEl.style.background = it.hex; dotEl.style.boxShadow = '0 0 6px '+it.hex; }
-  if (titleEl) titleEl.textContent = it.label;
-  const sevColors = { Critical:'#f43f5e', High:'#fb923c', Medium:'#fbbf24', Info:'#00ffb3' };
-  const sevBg = { Critical:'rgba(244,63,94,.15)', High:'rgba(251,146,60,.12)', Medium:'rgba(251,191,36,.1)', Info:'rgba(0,255,179,.08)' };
-  const sev = it.sev || 'Info';
-  if (badgeEl) {
-    badgeEl.textContent = sev.toUpperCase();
-    badgeEl.style.cssText = `font-size:10px;padding:2px 8px;border-radius:3px;flex-shrink:0;font-family:var(--mono);font-weight:700;letter-spacing:.5px;background:${sevBg[sev]||sevBg.Info};color:${sevColors[sev]||'#00ffb3'};border:1px solid ${sevColors[sev]||'#00ffb3'}44`;
+
+  // Toggle — click same item again to close
+  if (_tlSelId === id) {
+    _tlSelId = null;
+    tlCloseDetail();
+    renderTimeline();
+    return;
   }
-  const parts = it.detail.split(' · ').filter(Boolean);
-  const d = new Date(it.t);
-  const timeStr = d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' UTC';
-  const rows = parts.map(p => `<span style="display:inline-block;margin-right:12px;color:rgba(190,215,255,.85)">${p}</span>`).join('');
-  if (metaEl) metaEl.innerHTML = `<div style="color:rgba(0,229,255,.55);font-size:10px;margin-bottom:5px;letter-spacing:.3px">🕐 ${timeStr}</div><div style="line-height:1.8">${rows}</div>`;
-  strip.style.display = 'block';
+  _tlSelId = id;
+
+  // Highlight in feed
+  document.querySelectorAll('.tl-event').forEach(el => {
+    const eid = el.getAttribute('data-tlid');
+    el.classList.toggle('selected', eid === id);
+    el.querySelector('.tl-event-body').style.borderLeftColor = eid === id ? it.hex : 'transparent';
+  });
+
+  // Populate detail panel
+  const det    = document.getElementById('tl-detail');
+  const dotEl  = document.getElementById('tl-det-dot');
+  const titleEl = document.getElementById('tl-det-title');
+  const metaEl = document.getElementById('tl-det-meta');
+  const bdgEl  = document.getElementById('tl-det-badges');
+  if (!det) return;
+
+  if (dotEl)   { dotEl.style.background = it.hex; dotEl.style.boxShadow = '0 0 8px ' + it.hex; }
+  if (titleEl) titleEl.textContent = it.title;
+
+  const sevColors = { Critical:'#f43f5e', High:'#fb923c', Medium:'#fbbf24', Info:'#00ffb3' };
+  const sevBg     = { Critical:'rgba(244,63,94,.15)', High:'rgba(251,146,60,.12)', Medium:'rgba(251,191,36,.1)', Info:'rgba(0,255,179,.08)' };
+  const sev       = it.sev || 'Info';
+  if (bdgEl) {
+    bdgEl.innerHTML =
+      `<span style="font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:.5px;background:${sevBg[sev]||sevBg.Info};color:${sevColors[sev]||'#00ffb3'};border:1px solid ${sevColors[sev]||'#00ffb3'}44">${sev.toUpperCase()}</span>` +
+      `<span style="font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:.5px;background:rgba(${it.rgb},.1);color:${it.hex};border:1px solid rgba(${it.rgb},.28)">${it.cat}</span>`;
+  }
+
+  const d       = new Date(it.t);
+  const timeStr = d.toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short', year:'numeric'})
+    + ' · ' + d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) + ' UTC';
+
+  let meta = `<span style="color:rgba(0,229,255,.45);font-size:10px">🕐 ${timeStr}</span>`;
+  if (it.sub)   meta += `<br><span style="color:rgba(180,210,240,.75)">${it.sub}</span>`;
+  if (it.actors) meta += ` <span style="color:rgba(160,190,220,.5)">· ${it.actors}</span>`;
+  if (it.desc)  meta += `<br><span style="color:rgba(200,220,255,.65)">${it.desc}</span>`;
+  if (metaEl) { metaEl.innerHTML = meta; metaEl.style.borderLeftColor = it.hex + '60'; }
+
+  det.classList.add('open');
 }
 window.tlSelectItem = tlSelectItem;
 
-// Drag to pan
-function tlMouseDown(e) {
-  _tlDragging = true;
-  _tlDragStartX = e.clientX;
-  _tlDragStartOffset = _tlOffsetMs;
-  const svg = e.currentTarget;
-  if (svg) svg.style.cursor = 'grabbing';
+function tlCloseDetail() {
+  _tlSelId = null;
+  const det = document.getElementById('tl-detail');
+  if (det) det.classList.remove('open');
+  document.querySelectorAll('.tl-event').forEach(el => {
+    el.classList.remove('selected');
+    const body = el.querySelector('.tl-event-body');
+    if (body) body.style.borderLeftColor = 'transparent';
+  });
 }
-function tlMouseMove(e) {
-  if (!_tlDragging) return;
-  const svg = document.getElementById('tl-svg') || e.currentTarget;
-  const W = svg ? (svg.clientWidth || 900) : 900;
-  const cW = W - TL_LEFT;
-  const visMs = _tlRange / _tlZoomFactor;
-  const dxPx = e.clientX - _tlDragStartX;
-  const dxMs = -(dxPx / cW) * visMs;
-  _tlOffsetMs = _tlDragStartOffset + dxMs;
-  renderTimeline();
-}
-function tlMouseUp(e) {
-  _tlDragging = false;
-  const svg = document.getElementById('tl-svg') || e.currentTarget;
-  if (svg) svg.style.cursor = 'grab';
-}
-function tlWheel(e) {
-  e.preventDefault();
-  _tlZoomFactor = Math.max(0.1, Math.min(200, _tlZoomFactor * (e.deltaY > 0 ? 0.8 : 1.25)));
-  renderTimeline();
-}
-window.tlMouseDown = tlMouseDown;
-window.tlMouseMove = tlMouseMove;
-window.tlMouseUp   = tlMouseUp;
-window.tlWheel     = tlWheel;
+window.tlCloseDetail = tlCloseDetail;
 
-function initTimeline() {
-  renderTimeline();
-  // Retry if data not yet loaded
-  if (getTlItems().length === 0) setTimeout(initTimeline, 3000);
-}
-
-function refreshTimeline() {
-  renderTimeline();
-}
-
-function tlZoom(factor) {
-  _tlZoomFactor = Math.max(0.1, Math.min(200, _tlZoomFactor * (1/factor)));
-  renderTimeline();
-}
-window.tlZoom = tlZoom;
-
-function tlFitAll() {
-  const items = getTlItems();
-  if (items.length === 0) return;
-  const minT = Math.min(...items.map(i=>i.t));
-  const maxT = Date.now() + 2*3600000;
-  const span = maxT - minT;
-  _tlRange = span * 1.1;
-  _tlZoomFactor = 1;
-  _tlOffsetMs = 0;
+// ── Tab filter ──
+function tlSetTab(tab) {
+  _tlTab = tab;
+  _tlSelId = null;
+  const configs = {
+    all:      { col:'rgba(0,229,255,.9)',   bg:'rgba(0,229,255,.1)',   border:'rgba(0,229,255,.35)'   },
+    conflict: { col:'rgba(251,146,60,.9)',  bg:'rgba(251,146,60,.1)',  border:'rgba(251,146,60,.35)'  },
+    cyber:    { col:'rgba(0,229,255,.9)',   bg:'rgba(0,229,255,.1)',   border:'rgba(0,229,255,.35)'   },
+    news:     { col:'rgba(0,255,179,.9)',   bg:'rgba(0,255,179,.1)',   border:'rgba(0,255,179,.35)'   },
+  };
+  ['all','conflict','cyber','news'].forEach(t => {
+    const btn = document.getElementById('tlt-' + t);
+    if (!btn) return;
+    const active = t === tab;
+    const cfg = configs[t];
+    btn.style.color       = active ? cfg.col  : cfg.col.replace('.9', '.45');
+    btn.style.background  = active ? cfg.bg   : 'transparent';
+    btn.style.borderColor = active ? cfg.border : cfg.border.replace('.35', '.15');
+  });
+  tlCloseDetail();
   renderTimeline();
 }
-window.tlFitAll = tlFitAll;
+window.tlSetTab = tlSetTab;
 
+// ── Range selector ──
 function updateTimelineRange(r) {
   const ranges = {'24h':86400000,'7d':7*86400000,'30d':30*86400000,'90d':90*86400000};
-  _tlRange = ranges[r] || 7*86400000;
-  _tlZoomFactor = 1;
-  _tlOffsetMs = 0;
+  _tlRangeMs = ranges[r] || 7*86400000;
+  tlCloseDetail();
   renderTimeline();
 }
 window.updateTimelineRange = updateTimelineRange;
 
-function timelinePlayback() {
-  const btn = document.getElementById('tl-play');
-  if (_tlPlaying) {
-    clearInterval(_tlPlayInterval);
-    _tlPlaying = false;
-    if (btn) btn.textContent = '▶ REPLAY';
-  } else {
-    _tlOffsetMs = (_tlRange / _tlZoomFactor) * 0.9;
-    _tlPlaying = true;
-    if (btn) btn.textContent = '⏹ STOP';
-    _tlPlayInterval = setInterval(() => {
-      _tlOffsetMs -= (_tlRange / _tlZoomFactor) * 0.015;
-      if (_tlOffsetMs <= 0) {
-        _tlOffsetMs = 0;
-        clearInterval(_tlPlayInterval);
-        _tlPlaying = false;
-        if (btn) btn.textContent = '▶ REPLAY';
-      }
-      renderTimeline();
-    }, 80);
-  }
+// ── Init / refresh ──
+function initTimeline() {
+  renderTimeline();
+  if (getTlItems().length === 0) setTimeout(initTimeline, 2000);
 }
-window.timelinePlayback = timelinePlayback;
+function refreshTimeline() { renderTimeline(); }
+window.initTimeline   = initTimeline;
+window.refreshTimeline = refreshTimeline;
+
+// ── Legacy stubs — keep callers happy ──
+function tlZoom() {}
+function tlFitAll() {}
+function timelinePlayback() {}
+function tlMouseDown() {} function tlMouseMove() {} function tlMouseUp() {} function tlWheel() {}
+window.tlZoom = tlZoom; window.tlFitAll = tlFitAll; window.timelinePlayback = timelinePlayback;
+window.tlMouseDown = tlMouseDown; window.tlMouseMove = tlMouseMove;
+window.tlMouseUp = tlMouseUp; window.tlWheel = tlWheel;
 
 
 // ═══════════════════════════════════════════════════════════
