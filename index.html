@@ -10603,7 +10603,13 @@ function openStreamWindow(camId) {
           allowfullscreen>
         </iframe>
       </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end">
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">
+        <a href="https://github.com/AetherNode/pantheon/issues/new?title=${encodeURIComponent('Broken cam: ' + cam.name)}&body=${encodeURIComponent('**Cam:** ' + cam.name + '\n**Location:** ' + cam.loc + '\n**ID:** ' + cam.id + '\n**URL:** ' + link + '\n\n_Reported via Pantheon live feed modal._')}"
+          target="_blank" rel="noopener"
+          style="color:rgba(255,100,100,.45);font-size:10.5px;font-family:var(--mono);text-decoration:none;letter-spacing:0.3px;transition:color .15s"
+          onmouseover="this.style.color='rgba(255,100,100,.8)'" onmouseout="this.style.color='rgba(255,100,100,.45)'">
+          ⚑ report broken feed
+        </a>
         <a href="${link}" target="_blank" rel="noopener" style="background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);color:rgba(0,229,255,.7);padding:4px 14px;border-radius:4px;font-size:12.5px;font-family:var(--mono);text-decoration:none">↗ OPEN IN YOUTUBE</a>
       </div>
     </div>`);
