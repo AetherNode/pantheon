@@ -5318,7 +5318,7 @@ function runCorrelationEngine() {
   });
 
   // 2. Market spike × conflict region (commodity / energy)
-  const energyMarkets = MARKETS.filter(m => m.alert && ['Brent Crude','WTI Crude','Nat Gas','Wheat'].includes(m.asset));
+  const energyMarkets = MARKETS.filter(m => m.alert && ['WTI Crude','Nat Gas','Wheat'].includes(m.asset));
   energyMarkets.forEach(m => {
     const conflictMatch = CONFLICTS.find(c => c.sev === 'Critical' || c.sev === 'High');
     if (conflictMatch && parseFloat(m.chg) > 3) {
@@ -5864,18 +5864,24 @@ function mediaWidget(){
 
 
 const MARKET_SYMBOLS = [
-  {id:"m1",asset:"Brent Crude",sym:"BZ=F",unit:"\$/bbl"},
-  {id:"m2",asset:"WTI Crude",sym:"CL=F",unit:"\$/bbl"},
-  {id:"m3",asset:"Gold",sym:"GC=F",unit:"\$/oz"},
-  {id:"m4",asset:"USD/JPY",sym:"JPY=X",unit:""},
-  {id:"m5",asset:"Wheat",sym:"ZW=F",unit:"c/bu"},
-  {id:"m6",asset:"S&P 500",sym:"^GSPC",unit:"pts"},
-  {id:"m7",asset:"Nat Gas",sym:"NG=F",unit:"\$/MMBtu"},
-  {id:"m8",asset:"Copper",sym:"HG=F",unit:"\$/lb"},
-  {id:"m9",asset:"EUR/USD",sym:"EURUSD=X",unit:""},
-  {id:"m10",asset:"Baltic Dry",sym:"^OYAT",unit:"pts"},
-  {id:"m11",asset:"BTC/USD",sym:"BTC-USD",unit:"\$"},
-  {id:"m12",asset:"Dow Jones",sym:"^DJI",unit:"pts"},
+  {id:"m2", asset:"WTI Crude",  sym:"CL=F",       unit:"$/bbl"},
+  {id:"m3", asset:"Gold",       sym:"GC=F",        unit:"$/oz"},
+  {id:"m3b",asset:"Silver",     sym:"SI=F",        unit:"$/oz"},
+  {id:"m4", asset:"USD/JPY",    sym:"JPY=X",       unit:""},
+  {id:"m5", asset:"Wheat",      sym:"ZW=F",        unit:"c/bu"},
+  {id:"m6", asset:"S&P 500",    sym:"^GSPC",       unit:"pts"},
+  {id:"m6b",asset:"NAS100",     sym:"^NDX",        unit:"pts"},
+  {id:"m12",asset:"US30",       sym:"^DJI",        unit:"pts"},
+  {id:"m6c",asset:"UK100",      sym:"^FTSE",       unit:"pts"},
+  {id:"m6d",asset:"FR40",       sym:"^FCHI",       unit:"pts"},
+  {id:"m7", asset:"Nat Gas",    sym:"NG=F",        unit:"$/MMBtu"},
+  {id:"m8", asset:"Copper",     sym:"HG=F",        unit:"$/lb"},
+  {id:"m9", asset:"EUR/USD",    sym:"EURUSD=X",    unit:""},
+  {id:"m9b",asset:"DXY",        sym:"DX-Y.NYB",    unit:"pts"},
+  {id:"m9c",asset:"VIX",        sym:"^VIX",        unit:""},
+  {id:"m9d",asset:"10Y Yield",  sym:"^TNX",        unit:"%"},
+  {id:"m10",asset:"Baltic Dry", sym:"^OYAT",       unit:"pts"},
+  {id:"m11",asset:"BTC/USD",    sym:"BTC-USD",     unit:"$"},
 ];
 
 // ── PROXY HELPER for CORS-blocked APIs
@@ -7002,41 +7008,41 @@ function drawReliefEvents() {
 }
 
 async function fetchMarkets() {
-  // Per-symbol fetch using /v8/finance/chart — same technique as proven working dashboard
-  // allorigins proxy + chart endpoint is the most reliable CORS-free method
+  // ── FAST parallel proxy racing — all proxies fired simultaneously,
+  // first valid response wins, no waiting for sequential timeouts ──
+  const YH_BASE  = sym => `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
+  const YH_BASE2 = sym => `https://query2.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
+
+  const MPROXIES = [
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  ];
+
+  const parseYahoo = data => {
+    if (!data?.chart?.result?.[0]) return null;
+    const meta = data.chart.result[0].meta;
+    const cur  = meta.regularMarketPrice;
+    const prev = meta.chartPreviousClose || meta.previousClose || cur;
+    const chg  = cur - prev;
+    const chgPct = prev ? (chg / prev) * 100 : 0;
+    return { price: cur, chg, chgPct, name: meta.shortName || meta.symbol };
+  };
+
   const fetchOneSymbol = async (sym) => {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`;
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    // Race all proxies (both Yahoo endpoints) simultaneously — fastest wins
+    const attempts = [
+      ...MPROXIES.map(mk => fetch(mk(YH_BASE(sym)),  {signal: AbortSignal.timeout(7000)}).then(async r => { if(!r.ok) throw 0; const j=await r.json(); return j.contents ? JSON.parse(j.contents) : j; })),
+      ...MPROXIES.slice(0,2).map(mk => fetch(mk(YH_BASE2(sym)), {signal: AbortSignal.timeout(7000)}).then(async r => { if(!r.ok) throw 0; const j=await r.json(); return j.contents ? JSON.parse(j.contents) : j; })),
+    ];
+    // Promise.any returns the first to resolve without throwing
     try {
-      const r = await fetch(proxyUrl, {signal: AbortSignal.timeout(10000)});
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const data = await r.json();
-      if (data.chart && data.chart.result && data.chart.result[0]) {
-        const meta = data.chart.result[0].meta;
-        const cur   = meta.regularMarketPrice;
-        const prev  = meta.chartPreviousClose || meta.previousClose || cur;
-        const chg   = cur - prev;
-        const chgPct = prev ? (chg / prev) * 100 : 0;
-        return { price: cur, chg: chg, chgPct: chgPct, name: meta.shortName || meta.symbol || sym };
-      }
-    } catch(e) {}
-    // Fallback: try corsproxy.io
-    try {
-      const proxy2 = `https://corsproxy.io/?${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`)}`;
-      const r = await fetch(proxy2, {signal: AbortSignal.timeout(10000)});
-      if (r.ok) {
-        const data = await r.json();
-        if (data.chart && data.chart.result && data.chart.result[0]) {
-          const meta = data.chart.result[0].meta;
-          const cur   = meta.regularMarketPrice;
-          const prev  = meta.chartPreviousClose || meta.previousClose || cur;
-          const chg   = cur - prev;
-          const chgPct = prev ? (chg / prev) * 100 : 0;
-          return { price: cur, chg: chg, chgPct: chgPct, name: meta.shortName || meta.symbol || sym };
-        }
-      }
-    } catch(e) {}
-    return null;
+      const results = await Promise.any(
+        attempts.map(p => p.then(data => { const v = parseYahoo(data); if (!v) throw 0; return v; }))
+      );
+      return results;
+    } catch(e) { return null; }
   };
 
   // Fetch all symbols in parallel
@@ -7069,6 +7075,7 @@ async function fetchMarkets() {
     MARKETS = newMarkets;
     if (currentTab==='MARKETS') renderPanel();
     renderStatusBar();
+    buildTicker(); // refresh ticker with latest prices
     setFeedStatus('yahoo', 'live', updated, '');
     console.info(`Markets: updated ${updated}/${MARKET_SYMBOLS.length} symbols`);
   } else {
@@ -7700,13 +7707,36 @@ async function fetchLiveFlights() {
 }
 
 
-function buildTicker(){const items=[];ALERTS.slice(0,6).forEach(a=>items.push(`${a.sev==='Critical'?'⚡ CRITICAL':'◆ '+a.sev}: ${a.title}`));NEWS.filter(n=>n.breaking).slice(0,3).forEach(n=>items.push(`◉ BREAKING: ${n.hl}`));MARKETS.filter(m=>m.alert).slice(0,3).forEach(m=>items.push(`◈ MARKETS: ${m.asset} ${m.up?'▲':'▼'}${m.chg}% — ${m.driver}`));if(items.length===0){items.push('⟳ PANTHEON: Connecting to live intelligence feeds…');}const el=document.getElementById('ticker-inner');if(el)el.textContent=items.map(i=>`  ·  ${i}`).join('  ·  ');}
+function buildTicker(){
+  const items=[];
+  // Always show key market prices in ticker — regardless of alert status
+  const TICKER_MARKETS = ['WTI Crude','Gold','S&P 500','NAS100','US30','UK100','FR40','VIX','DXY','10Y Yield','BTC/USD','EUR/USD'];
+  const mktItems = TICKER_MARKETS.map(name => {
+    const m = MARKETS.find(x => x.asset === name);
+    if (!m || m.price === '—') return null;
+    const arrow = m.up ? '▲' : '▼';
+    const col = m.up ? '+' : '-';
+    const price = typeof m.price === 'number'
+      ? (m.price > 1000 ? m.price.toLocaleString('en-US',{maximumFractionDigits:0})
+        : m.price > 10  ? m.price.toFixed(2)
+        : m.price.toFixed(4))
+      : m.price;
+    return `${m.asset} ${price}${m.unit?' '+m.unit:''} ${arrow}${col}${m.chg}%`;
+  }).filter(Boolean);
+  if (mktItems.length) items.push('◈ ' + mktItems.join('  ·  '));
+  // Alerts and breaking news
+  ALERTS.slice(0,5).forEach(a=>items.push(`${a.sev==='Critical'?'⚡ CRITICAL':'◆ '+a.sev}: ${a.title}`));
+  NEWS.filter(n=>n.breaking).slice(0,3).forEach(n=>items.push(`◉ BREAKING: ${n.hl}`));
+  if(items.length===0){items.push('⟳ PANTHEON: Connecting to live intelligence feeds…');}
+  const el=document.getElementById('ticker-inner');
+  if(el)el.textContent=items.map(i=>`  ·  ${i}`).join('  ·  ');
+}
 
 function buildLiveInfra() {
-  const brent = MARKETS.find(m=>m.id==='m1');
+  const wti = MARKETS.find(m=>m.id==='m2');
   const bdi = MARKETS.find(m=>m.id==='m10');
-  const brentPrice = parseFloat(brent?.price)||0;
-  const brentUp = brent?.up || false;
+  const brentPrice = parseFloat(wti?.price)||0;
+  const brentUp = wti?.up || false;
   const shipping_stress = bdi?.up === false && parseFloat(bdi?.chg||0) > 1;
 
   INFRA = [
@@ -7978,8 +8008,7 @@ let _refreshCount = 0;
 async function refreshAllData() {
   _refreshCount++;
   const delay = ms => new Promise(r => setTimeout(r, ms));
-  fetchMarkets();
-  await delay(400);
+  // fetchMarkets runs on its own 45s dedicated interval — not bundled here
   fetchNews();
   await delay(400);
   fetchConflicts();
@@ -10370,10 +10399,14 @@ function _boot() {
   requestAnimationFrame(ts => { lastTime=ts; requestAnimationFrame(drawFrame); });
 
   // Fetch all live data immediately
+  fetchMarkets();                                        // markets fire instantly at boot
+  setTimeout(() => fetchMarkets(), 8000);                // retry early in case proxy was slow
   refreshAllData().then(() => {
     // Schedule refreshes
     setInterval(() => fetchLiveFlights(), 90000);   // flights every 90s
-    setInterval(() => refreshAllData(), 180000);     // everything else every 3min
+    setInterval(() => refreshAllData(), 180000);     // news/conflicts/cyber every 3min
+    // Markets on dedicated fast interval — decoupled from everything else
+    setInterval(() => fetchMarkets(), 45000);        // markets every 45s
     // Refresh open modules on data update
     setInterval(() => {
       if (moduleState['radar']) refreshRadar();
